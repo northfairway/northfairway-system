@@ -1,0 +1,10 @@
+Document Request Not Approved
+Dear Sample Homeowner,
+Your document request was not approved. Please review the recorded decision.
+Request ID: REQ-DEMO-002
+Request Type: Gate Pass
+Request Status: Rejected
+Reason: Supporting information incomplete
+Please sign in to the NFH-HOA portal to review your status.
+North Fairway Homes Homeowners Association Inc.
+This is an automated notification.

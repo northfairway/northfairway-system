@@ -1,0 +1,473 @@
+{
+  "status": "SOURCE_AUDIT_ONLY_NOT_POSTGRES_COMPATIBLE",
+  "python_files_scanned": 59,
+  "sql_files_scanned": 9,
+  "findings": [
+    {
+      "file": "advance_promo.py",
+      "category": "mysql_upsert",
+      "count_lines": 1,
+      "sample_lines": [
+        93
+      ]
+    },
+    {
+      "file": "app.py",
+      "category": "mysql_driver",
+      "count_lines": 11,
+      "sample_lines": [
+        25,
+        26,
+        627,
+        629,
+        2071,
+        2813,
+        4006,
+        4173,
+        4217,
+        4394,
+        6212
+      ]
+    },
+    {
+      "file": "app.py",
+      "category": "mysql_upsert",
+      "count_lines": 4,
+      "sample_lines": [
+        879,
+        2752,
+        3985,
+        4002
+      ]
+    },
+    {
+      "file": "app.py",
+      "category": "mysql_insert_ignore",
+      "count_lines": 2,
+      "sample_lines": [
+        3525,
+        6142
+      ]
+    },
+    {
+      "file": "app.py",
+      "category": "mysql_date_format",
+      "count_lines": 9,
+      "sample_lines": [
+        1451,
+        1452,
+        1483,
+        1484,
+        1682,
+        1683,
+        3189,
+        3190,
+        6099
+      ]
+    },
+    {
+      "file": "app.py",
+      "category": "mysql_group_concat",
+      "count_lines": 1,
+      "sample_lines": [
+        1452
+      ]
+    },
+    {
+      "file": "app.py",
+      "category": "mysql_backticks",
+      "count_lines": 3,
+      "sample_lines": [
+        674,
+        1181,
+        1182
+      ]
+    },
+    {
+      "file": "app.py",
+      "category": "local_file_write",
+      "count_lines": 8,
+      "sample_lines": [
+        91,
+        95,
+        96,
+        100,
+        2877,
+        2912,
+        5295,
+        5589
+      ]
+    },
+    {
+      "file": "app.py",
+      "category": "local_memory_auth",
+      "count_lines": 21,
+      "sample_lines": [
+        622,
+        623,
+        793,
+        799,
+        803,
+        812,
+        816,
+        4307,
+        4308,
+        4324,
+        4325,
+        4328,
+        4329,
+        4338,
+        4392
+      ]
+    },
+    {
+      "file": "create_admin.py",
+      "category": "mysql_driver",
+      "count_lines": 4,
+      "sample_lines": [
+        13,
+        14,
+        44,
+        50
+      ]
+    },
+    {
+      "file": "delinquency_email_job.py",
+      "category": "scheduler",
+      "count_lines": 1,
+      "sample_lines": [
+        1
+      ]
+    },
+    {
+      "file": "delinquency_job.py",
+      "category": "mysql_upsert",
+      "count_lines": 1,
+      "sample_lines": [
+        17
+      ]
+    },
+    {
+      "file": "delinquency_job.py",
+      "category": "mysql_insert_ignore",
+      "count_lines": 1,
+      "sample_lines": [
+        21
+      ]
+    },
+    {
+      "file": "delinquency_job.py",
+      "category": "scheduler",
+      "count_lines": 1,
+      "sample_lines": [
+        1
+      ]
+    },
+    {
+      "file": "deployment/batch13/export_mysql_snapshot.py",
+      "category": "mysql_driver",
+      "count_lines": 4,
+      "sample_lines": [
+        5,
+        15,
+        16,
+        28
+      ]
+    },
+    {
+      "file": "deployment/batch13/export_mysql_snapshot.py",
+      "category": "local_file_write",
+      "count_lines": 2,
+      "sample_lines": [
+        27,
+        41
+      ]
+    },
+    {
+      "file": "dues_automation.py",
+      "category": "mysql_upsert",
+      "count_lines": 1,
+      "sample_lines": [
+        100
+      ]
+    },
+    {
+      "file": "dues_automation.py",
+      "category": "mysql_insert_ignore",
+      "count_lines": 1,
+      "sample_lines": [
+        45
+      ]
+    },
+    {
+      "file": "dues_automation.py",
+      "category": "mysql_last_insert_id",
+      "count_lines": 1,
+      "sample_lines": [
+        100
+      ]
+    },
+    {
+      "file": "first_time_enrollment.py",
+      "category": "mysql_driver",
+      "count_lines": 1,
+      "sample_lines": [
+        9
+      ]
+    },
+    {
+      "file": "first_time_enrollment.py",
+      "category": "mysql_upsert",
+      "count_lines": 1,
+      "sample_lines": [
+        31
+      ]
+    },
+    {
+      "file": "hoa_documents.py",
+      "category": "local_file_write",
+      "count_lines": 2,
+      "sample_lines": [
+        23,
+        40
+      ]
+    },
+    {
+      "file": "homeowner_reconciliation.py",
+      "category": "mysql_upsert",
+      "count_lines": 3,
+      "sample_lines": [
+        338,
+        370,
+        424
+      ]
+    },
+    {
+      "file": "homeowner_reconciliation.py",
+      "category": "local_file_write",
+      "count_lines": 1,
+      "sample_lines": [
+        65
+      ]
+    },
+    {
+      "file": "nfh_extensions.py",
+      "category": "mysql_upsert",
+      "count_lines": 6,
+      "sample_lines": [
+        76,
+        77,
+        78,
+        296,
+        317,
+        428
+      ]
+    },
+    {
+      "file": "nfh_extensions.py",
+      "category": "mysql_date_format",
+      "count_lines": 1,
+      "sample_lines": [
+        77
+      ]
+    },
+    {
+      "file": "nfh_extensions.py",
+      "category": "local_file_write",
+      "count_lines": 2,
+      "sample_lines": [
+        396,
+        397
+      ]
+    },
+    {
+      "file": "officer_task_queue.py",
+      "category": "mysql_insert_ignore",
+      "count_lines": 3,
+      "sample_lines": [
+        39,
+        45,
+        51
+      ]
+    },
+    {
+      "file": "overdue_installment_email_job.py",
+      "category": "mysql_insert_ignore",
+      "count_lines": 1,
+      "sample_lines": [
+        100
+      ]
+    },
+    {
+      "file": "property_billing.py",
+      "category": "mysql_upsert",
+      "count_lines": 1,
+      "sample_lines": [
+        87
+      ]
+    },
+    {
+      "file": "renter_accounts.py",
+      "category": "mysql_driver",
+      "count_lines": 1,
+      "sample_lines": [
+        13
+      ]
+    },
+    {
+      "file": "renter_accounts.py",
+      "category": "mysql_upsert",
+      "count_lines": 1,
+      "sample_lines": [
+        351
+      ]
+    },
+    {
+      "file": "run_monthly_billing.py",
+      "category": "mysql_insert_ignore",
+      "count_lines": 1,
+      "sample_lines": [
+        4
+      ]
+    },
+    {
+      "file": "test_advance_promo.py",
+      "category": "mysql_upsert",
+      "count_lines": 1,
+      "sample_lines": [
+        40
+      ]
+    },
+    {
+      "file": "test_billing_schedule.py",
+      "category": "mysql_insert_ignore",
+      "count_lines": 1,
+      "sample_lines": [
+        14
+      ]
+    },
+    {
+      "file": "test_soa_template_isolated.py",
+      "category": "local_file_write",
+      "count_lines": 1,
+      "sample_lines": [
+        22
+      ]
+    },
+    {
+      "file": "test_soa_type_or_isolated.py",
+      "category": "local_file_write",
+      "count_lines": 1,
+      "sample_lines": [
+        51
+      ]
+    },
+    {
+      "file": "tests/test_registration_mail_isolated.py",
+      "category": "local_memory_auth",
+      "count_lines": 1,
+      "sample_lines": [
+        28
+      ]
+    },
+    {
+      "file": "transaction_history.py",
+      "category": "mysql_group_concat",
+      "count_lines": 1,
+      "sample_lines": [
+        45
+      ]
+    },
+    {
+      "file": "treasurer_financial.py",
+      "category": "mysql_date_format",
+      "count_lines": 1,
+      "sample_lines": [
+        724
+      ]
+    },
+    {
+      "file": "treasurer_financial.py",
+      "category": "local_file_write",
+      "count_lines": 1,
+      "sample_lines": [
+        170
+      ]
+    }
+  ],
+  "sql_inventory": [
+    {
+      "file": "database/HOMEOWNER_EMAIL_CHANGE_MIGRATION.sql",
+      "bytes": 611,
+      "create_tables": 1,
+      "auto_increment": 0,
+      "enum": 0,
+      "engine_clause": 1
+    },
+    {
+      "file": "database/NFH_BATCH12_FIRST_TIME_ENROLLMENT.sql",
+      "bytes": 1931,
+      "create_tables": 2,
+      "auto_increment": 2,
+      "enum": 2,
+      "engine_clause": 2
+    },
+    {
+      "file": "database/NFH_BATCH12_OFFICER_WORKLOAD.sql",
+      "bytes": 1790,
+      "create_tables": 2,
+      "auto_increment": 2,
+      "enum": 2,
+      "engine_clause": 2
+    },
+    {
+      "file": "database/NFH_BATCH12_PROPERTY_FOUNDATION.sql",
+      "bytes": 5997,
+      "create_tables": 8,
+      "auto_increment": 8,
+      "enum": 8,
+      "engine_clause": 8
+    },
+    {
+      "file": "database/NFH_BATCH12_RECONCILIATION_REVIEW.sql",
+      "bytes": 1062,
+      "create_tables": 0,
+      "auto_increment": 0,
+      "enum": 0,
+      "engine_clause": 0
+    },
+    {
+      "file": "database/NFH_BATCH12_RENTER_ACCOUNTS.sql",
+      "bytes": 1902,
+      "create_tables": 1,
+      "auto_increment": 1,
+      "enum": 1,
+      "engine_clause": 1
+    },
+    {
+      "file": "database/NFH_HOA_COMPLETE_DATABASE.sql",
+      "bytes": 64805,
+      "create_tables": 65,
+      "auto_increment": 58,
+      "enum": 46,
+      "engine_clause": 56
+    },
+    {
+      "file": "database/NFH_HOA_MEMBERSHIP_PENDING_UPGRADE.sql",
+      "bytes": 1377,
+      "create_tables": 1,
+      "auto_increment": 1,
+      "enum": 2,
+      "engine_clause": 1
+    },
+    {
+      "file": "database/NFH_PROMO_CODES_BATCH3.sql",
+      "bytes": 1059,
+      "create_tables": 1,
+      "auto_increment": 1,
+      "enum": 0,
+      "engine_clause": 1
+    }
+  ],
+  "parse_errors": []
+}

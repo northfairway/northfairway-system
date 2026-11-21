@@ -1,0 +1,10 @@
+Registration Not Approved
+Dear Sample Homeowner,
+Your homeowner registration could not be approved at this time.
+Homeowner Name: Sample Homeowner
+Registration Status: Rejected
+Decision Date: 2026-10-30
+Reason: Application details require review
+Please sign in to the NFH-HOA portal to review your status.
+North Fairway Homes Homeowners Association Inc.
+This is an automated notification.

@@ -1,0 +1,533 @@
+
+/* ==========================================
+   NFH-HOA EXTRA MODULES
+   ========================================== */
+
+.nfh-extra {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f4f9f4;
+    border: 1px solid #d4e5d8;
+    border-radius: 14px;
+    color: #2d312e;
+}
+
+.nfh-extra h2 {
+    color: #1b4332;
+}
+
+.nfh-extra-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.nfh-extra article {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #e2ebe2;
+}
+
+.nfh-extra input,
+.nfh-extra select,
+.nfh-extra textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 5px 0 10px;
+    padding: 9px;
+    border: 1px solid #b9cdbd;
+    border-radius: 7px;
+}
+
+.nfh-extra button {
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 8px;
+    background: #2d6a4f;
+    color: white;
+    cursor: pointer;
+}
+
+.nfh-extra button:hover {
+    background: #1b4332;
+}
+
+.nfh-extra output {
+    display: block;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin: 12px 0;
+}
+
+.nfh-extra ul {
+    padding-left: 20px;
+}
+
+.nfh-extra small {
+    display: block;
+    margin-top: 6px;
+}
+
+/* ==========================================
+   CHATBOT FLOATING WIDGET
+   ========================================== */
+
+.nfh-chat-widget {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1100;
+    font-family: inherit;
+}
+
+/* Floating launcher */
+
+.nfh-chat-widget #nfhChatToggle {
+    border: 0;
+    border-radius: 50%;
+    background: #1b4332;
+    color: white;
+    width: 55px;
+    height: 55px;
+    font-size: 22px;
+    box-shadow: 0 3px 12px #0003;
+    cursor: pointer;
+    float: right;
+}
+
+/* Chatbot panel base */
+
+.nfh-chat-widget #nfhChatPanel {
+    clear: both;
+    background: white;
+    border: 1px solid #dce6dc;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px #0003;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.nfh-chat-widget #nfhChatPanel[hidden] {
+    display: none;
+}
+
+/* ==========================================
+   EXPANDED RIGHT-SIDE CHATBOT
+   ========================================== */
+
+.nfh-chat-widget #nfhChatPanel:not([hidden]) {
+    position: fixed;
+
+    top: 50%;
+    right: 30px;
+    left: auto;
+    bottom: auto;
+
+    transform: translateY(-50%);
+
+    width: min(500px, calc(100vw - 60px));
+    height: 88dvh;
+    max-height: 950px;
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 1101;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* Chatbot header */
+
+.nfh-chat-widget header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1b4332;
+    color: white;
+    padding: 14px;
+    flex-shrink: 0;
+}
+
+.nfh-chat-widget header button {
+    background: none;
+    border: 0;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Chat messages */
+
+.nfh-chat-widget #nfhChatMessages {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+
+    min-height: 0;
+    height: auto;
+    max-height: none;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 16px;
+    gap: 12px;
+    overscroll-behavior: contain;
+}
+
+.nfh-chat-widget #nfhChatMessages p {
+    padding: 11px 14px;
+    border-radius: 12px;
+    margin: 0;
+    max-width: 90%;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Bot messages */
+
+.nfh-chat-widget .nfh-bot {
+    background: #e2ebe2;
+    align-self: flex-start;
+}
+
+/* Homeowner messages */
+
+.nfh-chat-widget .nfh-human {
+    background: #2d6a4f;
+    color: white;
+    align-self: flex-end;
+}
+
+/* Suggested questions */
+
+.nfh-chat-widget #nfhSuggestions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 10px;
+    flex-shrink: 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.nfh-chat-widget #nfhSuggestions button {
+    font-size: 11px;
+    border: 1px solid #b5c8b5;
+    background: white;
+    border-radius: 12px;
+    padding: 6px 9px;
+    cursor: pointer;
+}
+
+.nfh-chat-widget #nfhSuggestions button:hover {
+    background: #e2ebe2;
+}
+
+/* Chat input form */
+
+.nfh-chat-widget #nfhChatForm {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    gap: 8px;
+    flex-shrink: 0;
+    background: white;
+    border-top: 1px solid #e2ebe2;
+}
+
+.nfh-chat-widget #nfhChatForm input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.nfh-chat-widget #nfhChatForm button {
+    flex-shrink: 0;
+    background: #2d6a4f;
+    color: white;
+    border: 0;
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.nfh-chat-widget #nfhChatForm button:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+#nfhConcernsFeedback {
+    scroll-margin-top: 24px;
+}
+
+/* ==========================================
+   FAQ MANAGEMENT
+   ========================================== */
+
+.nfh-faq-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.nfh-faq-stats article {
+    padding: 16px;
+    border: 1px solid #e2ebe2;
+    border-radius: 12px;
+}
+
+.nfh-faq-stats strong {
+    display: block;
+    font-size: 24px;
+    color: #1b4332;
+}
+
+.nfh-chat-admin .nfh-faq-editor {
+    padding: 18px;
+    margin: 18px 0;
+    border: 1px solid #e2ebe2;
+    border-radius: 12px;
+}
+
+.nfh-faq-editor label {
+    display: block;
+    margin: 10px 0;
+}
+
+.nfh-faq-editor input:not([type=checkbox]),
+.nfh-faq-editor textarea,
+.nfh-chat-admin-panels textarea,
+.nfh-chat-admin-panels input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cdd9cf;
+    border-radius: 8px;
+}
+
+.nfh-chat-admin-panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.nfh-admin-preview {
+    min-height: 100px;
+    max-height: 240px;
+    overflow: auto;
+    padding: 12px;
+    background: #f4f9f4;
+    border-radius: 10px;
+}
+
+.nfh-chat-admin .btn {
+    margin: 3px;
+}
+
+/* ==========================================
+   SOA REQUEST INTEGRATION
+   ========================================== */
+
+.nfh-soa-in-request {
+    margin: 20px 0;
+}
+
+.nfh-soa-in-request.nfh-soa-eligible {
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================
+   ADMIN MANAGEMENT LAYOUT
+   ========================================== */
+
+#chatbot-tab .nfh-chat-admin,
+#system-feedback-tab .nfh-feedback-admin,
+#concerns-tab .nfh-concerns-officer {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+#chatbot-tab .nfh-faq-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#chatbot-tab .nfh-faq-editor[hidden] {
+    display: none;
+}
+
+#chatbot-tab .nfh-faq-editor label {
+    display: block;
+    width: 100%;
+}
+
+#chatbot-tab .nfh-faq-editor :is(
+    input:not([type=checkbox]),
+    textarea,
+    select
+),
+#chatbot-tab .nfh-chat-admin-panels :is(
+    input,
+    textarea
+) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+#chatbot-tab .nfh-faq-editor textarea[name=answer] {
+    min-height: 140px;
+    resize: vertical;
+}
+
+#chatbot-tab .nfh-faq-editor textarea[name=keywords] {
+    min-height: 80px;
+    resize: vertical;
+}
+
+#chatbot-tab #nfhFallbackText {
+    min-height: 145px;
+    resize: vertical;
+}
+
+#chatbot-tab .nfh-chat-admin-panels > section {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid #e2ebe2;
+    border-radius: 12px;
+}
+
+#chatbot-tab .nfh-admin-preview {
+    overflow-wrap: anywhere;
+    min-height: 180px;
+    max-height: 320px;
+}
+
+#chatbot-tab #nfhAdminChatForm {
+    display: flex;
+    gap: 8px;
+    align-items: end;
+}
+
+#chatbot-tab #nfhAdminChatForm input {
+    flex: 1;
+}
+
+/* ==========================================
+   FEEDBACK AND CONCERN MANAGEMENT
+   ========================================== */
+
+.nfh-feedback-filters,
+.nfh-concern-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.nfh-feedback-filters > *,
+.nfh-concern-filters > * {
+    min-width: 0;
+    max-width: 100%;
+    padding: 10px;
+    border: 1px solid #cdd9cf;
+    border-radius: 8px;
+}
+
+#nfhOfficerConcernDetail {
+    border: 1px solid #e2ebe2;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 20px;
+    overflow-wrap: anywhere;
+}
+
+#nfhOfficerConcernForm textarea {
+    width: 100%;
+    min-height: 100px;
+    display: block;
+}
+
+#nfhConcernHistory {
+    max-height: 280px;
+    overflow: auto;
+}
+
+.nfh-help {
+    font-size: .9rem;
+    color: #566b5b;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 700px) {
+    .nfh-chat-admin-panels {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    #chatbot-tab #nfhAdminChatForm {
+        flex-wrap: wrap;
+    }
+
+    #chatbot-tab .nfh-chat-admin-panels {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .nfh-feedback-filters > *,
+    .nfh-concern-filters > * {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .nfh-chat-widget {
+        right: 12px;
+        bottom: 12px;
+    }
+
+    .nfh-chat-widget #nfhChatPanel:not([hidden]) {
+        top: 50%;
+        left: 10px;
+        right: 10px;
+        bottom: auto;
+
+        width: auto;
+        height: 92dvh;
+        max-height: calc(100dvh - 20px);
+
+        transform: translateY(-50%);
+    }
+
+    .nfh-chat-widget #nfhChatMessages {
+        min-height: 0;
+        max-height: none;
+        padding: 12px;
+    }
+
+    .nfh-chat-widget #nfhSuggestions {
+        max-height: 110px;
+    }
+
+    .nfh-chat-widget #nfhChatForm {
+        padding: 10px;
+    }
+}

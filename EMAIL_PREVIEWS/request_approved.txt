@@ -1,0 +1,10 @@
+Your Document Request Has Been Approved
+Dear Sample Homeowner,
+Your document request was approved. Approval does not necessarily mean the document is paid, ready for release, or issued.
+Request ID: REQ-DEMO-001
+Request Type: Proof of Residency
+Request Status: Ready for Payment & Release
+Request Fee: PHP 50.00
+Please sign in to the NFH-HOA portal to review your status.
+North Fairway Homes Homeowners Association Inc.
+This is an automated notification.

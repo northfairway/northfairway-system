@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>Northfairway - {{ role }} Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='officer.css', v='batch10sidebar20261121') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='session-timeout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='nfh-responsive.css', v='batch10sidebar20261121') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='nfh-filters.css', v='20261001bsis2') }}">
+    <style>
+    /* Critical officer overview layout: kept here so older cached role CSS cannot
+       restore the former side-by-side / nested dashboard arrangement. */
+    #overview-tab.nfh-dashboard-overview.tab-content.active {
+        display: block;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+    }
+    #overview-tab > #liveMetricGrid.nfh-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: clamp(9px, 1vw, 13px);
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        margin: 0 0 12px;
+        align-items: stretch;
+        align-content: start;
+    }
+    #overview-tab > #liveMetricGrid.nfh-stats-grid > .stat-card {
+        position: static;
+        inset: auto;
+        float: none;
+        display: flex;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        min-height: 88px;
+        height: auto;
+        margin: 0;
+        padding: clamp(11px, 1.1vw, 15px);
+        align-items: center;
+        align-self: stretch;
+        overflow: hidden;
+    }
+    #overview-tab > .nfh-activity-panel {
+        display: block;
+        clear: both;
+        grid-column: 1 / -1;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        height: auto;
+        min-height: 0;
+        margin: 0 0 12px;
+    }
+    #overview-tab > .nfh-activity-panel .table-responsive {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    #logoutModal.unified-logout-overlay {
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+    #logoutModal.unified-logout-overlay > .unified-logout-card {
+        width: min(360px, calc(100% - 36px));
+        max-width: 360px;
+        min-height: 0;
+        height: auto;
+        max-height: 88vh;
+        margin: auto;
+        padding: 22px 22px 20px;
+        overflow-y: auto;
+        border-radius: 14px;
+    }
+    @media (min-width: 1440px) {
+        #overview-tab > #liveMetricGrid.nfh-stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1024px) and (max-width: 1439px) {
+        #overview-tab > #liveMetricGrid.nfh-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 1023px) {
+        #overview-tab > #liveMetricGrid.nfh-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 767px) {
+        #overview-tab > #liveMetricGrid.nfh-stats-grid { grid-template-columns: 1fr; gap: 12px; }
+        #overview-tab > #liveMetricGrid.nfh-stats-grid > .stat-card { min-height: 84px; padding: 12px; }
+        #logoutModal.unified-logout-overlay > .unified-logout-card { width: min(340px, calc(100% - 24px)); max-width: 340px; padding: 20px 18px 18px; }
+    }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='nfh-accessibility.css', v='20260930a') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='document-preview.css', v='20261001preview1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='nfh-loading.css', v='20261004final') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='nfh-extensions.css', v='20261022four') }}">
+<link rel="stylesheet" href="{{ url_for('static',filename='nfh-delinquency-settings.css') }}"><link rel="stylesheet" href="{{ url_for('static',filename='nfh-transaction-history.css',v='20261030compact') }}">
+    <style id="nfh-treasurer-sidebar-groups">
+      .sidebar .sidebar-nav{overflow-y:auto;min-height:0;scrollbar-width:none;-ms-overflow-style:none;}
+      .sidebar .sidebar-nav::-webkit-scrollbar{display:none;width:0;height:0;}
+      .sidebar .sidebar-nav .nav-section{margin-top:12px;margin-bottom:5px;letter-spacing:.055em;font-size:10px;line-height:1.35;}
+      .sidebar .sidebar-nav .nav-item{min-height:39px;align-items:center;}
+      .sidebar .sidebar-nav .nav-item span:not(.nav-count-badge){overflow-wrap:anywhere;}
+      .sidebar.collapsed .sidebar-nav .nav-section{font-size:0;margin:8px 0;border-top:1px solid rgba(255,255,255,.15);}
+      @media(max-width:767px){.sidebar .sidebar-nav{max-height:calc(100dvh - 170px);}}
+    </style>
+</head>
+<body>
+    <div class="officer-wrapper">
+        <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+            <div class="sidebar-header">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="NFH HOA logo" class="sidebar-logo" onerror="this.style.display='none'">
+                <div class="brand-text">
+                    <h2>NFH HOA</h2>
+                    <span>Homeowners' Association</span>
+                </div>
+                <button class="sidebar-chevron" id="desktopSidebarToggle" type="button" aria-label="Collapse sidebar" title="Collapse sidebar" aria-controls="sidebar" aria-expanded="true"><i class="fa-solid fa-angles-left" aria-hidden="true"></i></button>
+            </div>
+            <nav class="sidebar-nav">
+                {% if role == 'Treasurer' %}
+                <div class="nav-section">Dashboard</div>
+                <a href="#overview" class="nav-item active" data-tab="overview-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Overview</span></a>
+                <a href="#officer-tasks" class="nav-item" data-tab="officer-tasks-tab"><i class="fa-solid fa-list-check" aria-hidden="true"></i><span>My Assigned Tasks</span></a>
+                <div class="nav-section">Request & Service Management</div>
+                <a href="#treasurer-checking" class="nav-item" data-tab="treasurer-checking-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg><span>Requests for Checking</span><span class="nav-count-badge" data-metric="requests_for_checking" hidden>0</span></a>
+                <a href="#concerns" class="nav-item" data-tab="concerns-tab"><i class="fa-regular fa-comments"></i><span>Concern Management</span></a>
+                <div class="nav-section">Payment Management</div>
+                <a href="#payments" class="nav-item" data-tab="payments-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Payment &amp; Release</span><span class="nav-count-badge" data-metric="approved_unpaid" hidden>0</span></a>
+                <a href="#fee-mgmt" class="nav-item" data-tab="fee-mgmt-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Fixed Fee Management</span></a>
+                <a href="#adjustments" class="nav-item" data-tab="adjustments-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v6m0 6v6m-9-9h6m6 0h6"/></svg><span>Monthly Dues</span></a>
+                <a href="#promo-codes" class="nav-item" data-tab="promo-codes-tab"><i class="fa-solid fa-ticket" aria-hidden="true"></i><span>Promo Codes</span></a>
+                <div class="nav-section">Financial Records Management</div>
+                <a href="#historical-payment" class="nav-item" data-tab="historical-payment-tab"><i class="fa-solid fa-receipt"></i><span>Historical Payment</span></a>
+                <a href="#transaction-history" class="nav-item" data-tab="transaction-history-tab"><i class="fa-solid fa-money-bill-transfer"></i><span>Transaction History</span></a>
+                <a href="#financial-statement" class="nav-item" data-tab="financial-statement-tab"><i class="fa-regular fa-file-lines"></i><span>Statement of Account</span></a>
+                <div class="nav-section">Data Import Management</div>
+                <a href="#financial-import" class="nav-item" data-tab="financial-import-tab"><i class="fa-solid fa-file-import"></i><span>Import Existing Data</span></a>
+                <div class="nav-section">Reference & Settings</div>
+                <a href="#document-templates" class="nav-item" data-tab="document-templates-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Document Templates</span></a>
+                <a href="#treasurer-contact" class="nav-item" data-tab="treasurer-contact-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Treasurer Contact Info</span></a>
+                {% else %}
+
+                <div class="nav-section">Dashboard</div>
+                <a href="#overview" class="nav-item active" data-tab="overview-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Overview</span></a>
+                <a href="#officer-tasks" class="nav-item" data-tab="officer-tasks-tab"><i class="fa-solid fa-list-check" aria-hidden="true"></i><span>My Assigned Tasks</span></a>
+                {% if role == "Vice President" %}<a href="#officer-workload" class="nav-item" data-tab="officer-workload-tab"><i class="fa-solid fa-chart-column" aria-hidden="true"></i><span>Officer Workload</span></a>{% endif %}
+
+                <div class="nav-section">Community Services</div>
+                <a href="#concerns" class="nav-item" data-tab="concerns-tab"><i class="fa-regular fa-comments"></i><span>Concern Management</span></a>
+
+                {% if role in ['Secretary','Admin'] %}
+                <div class="nav-section">Request Management</div>
+                <a href="#assigned" class="nav-item" data-tab="assigned-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>My Assigned Requests</span><span class="nav-count-badge" data-metric="pending_requests" hidden>0</span></a>
+                {% endif %}
+
+                {% if role == 'Treasurer' or role == 'Admin' %}
+                {% if role == 'Treasurer' %}
+                <div class="nav-section">Request Management</div>
+                <a href="#treasurer-checking" class="nav-item" data-tab="treasurer-checking-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg><span>Requests for Checking</span><span class="nav-count-badge" data-metric="requests_for_checking" hidden>0</span></a>
+                {% endif %}
+                <div class="nav-section">Payments &amp; Fees</div>
+                <a href="#payments" class="nav-item" data-tab="payments-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Payment &amp; Release</span><span class="nav-count-badge" data-metric="approved_unpaid" hidden>0</span></a>
+                <a href="#fee-mgmt" class="nav-item" data-tab="fee-mgmt-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Fixed Fee Management</span></a>
+                <a href="#adjustments" class="nav-item" data-tab="adjustments-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v6m0 6v6m-9-9h6m6 0h6"/></svg><span>Monthly Dues</span></a>
+                <a href="#financial-import" class="nav-item" data-tab="financial-import-tab"><i class="fa-solid fa-file-import"></i><span>Import Existing Data</span></a>
+                {% if role == 'Treasurer' %}<a href="#historical-payment" class="nav-item" data-tab="historical-payment-tab"><i class="fa-solid fa-receipt"></i><span>Historical Payment</span></a>{% endif %}
+                <a href="#transaction-history" class="nav-item" data-tab="transaction-history-tab"><i class="fa-solid fa-money-bill-transfer"></i><span>Transaction History</span></a>
+                <a href="#financial-statement" class="nav-item" data-tab="financial-statement-tab"><i class="fa-regular fa-file-lines"></i><span>Statement of Account</span></a>
+                <a href="#treasurer-contact" class="nav-item" data-tab="treasurer-contact-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Treasurer Contact Info</span></a>
+                {% endif %}
+
+                {% if role in ['President','Vice President','Board Director'] or role == 'Admin' %}
+                <div class="nav-section">Approvals</div>
+                <a href="#pres-approvals" class="nav-item" data-tab="pres-approvals-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>Request Approvals</span><span class="nav-count-badge" data-metric="pending_request_approvals" hidden>0</span></a>
+                <a href="#pres-fees" class="nav-item" data-tab="pres-fees-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Fee Approvals</span><span class="nav-count-badge" data-metric="pending_fee_approvals" hidden>0</span></a>
+                {% endif %}
+
+                <div class="nav-section">Reference</div>
+                <a href="#document-templates" class="nav-item" data-tab="document-templates-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Document Templates</span></a>
+                {% endif %}
+            </nav>
+            <div class="sidebar-footer">
+                <a href="javascript:void(0)" class="nav-item sidebar-logout" id="logoutBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Sign Out</span></a>
+            </div>
+        </aside>
+        <button class="sidebar-backdrop" id="sidebarBackdrop" type="button" aria-label="Close navigation"></button>
+
+        <div class="main-container">
+            <header class="top-header">
+                <button class="toggle-btn mobile-nav-toggle" id="sidebarToggle" type="button" aria-label="Open navigation" title="Open navigation" aria-controls="sidebar" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+                <div class="header-title">
+                    <h1 id="pageTitle">Overview</h1>
+                    <p id="portalContext" class="portal-context">{% if role == 'Secretary' %}Secretary Portal{% elif role == 'Treasurer' %}Treasurer Portal{% elif role in ['President','Vice President','Board Director'] %}Executive Portal{% else %}Officer Portal{% endif %}</p>
+                </div>
+                <div class="account-menu-wrap">
+                    <button class="header-role-identity account-menu-button" type="button" onclick="toggleAccountMenu(this)" aria-haspopup="menu" aria-expanded="false" aria-label="Open account menu">
+                        <span class="account-avatar" aria-hidden="true">{% if current_user and current_user.profile_image %}<img src="{{ current_user.profile_image }}" alt="" class="account-avatar-img" id="headerProfileImage">{% else %}<span id="headerProfileInitial">{{ (session.full_name or role or 'U')[:1]|upper }}</span>{% endif %}</span><span class="account-copy"><strong class="user-name">{{ session.full_name }}</strong><small>{{ role }}</small></span><i class="fa-solid fa-chevron-down account-menu-chevron" aria-hidden="true"></i>
+                    </button>
+                    <div class="account-dropdown nfh-account-dropdown" role="menu" hidden>
+                        <div class="account-dropdown-heading nfh-account-dropdown-heading">
+                            <span class="account-dropdown-avatar" aria-hidden="true">{% if current_user and current_user.profile_image %}<img src="{{ current_user.profile_image }}" alt="" class="account-avatar-img" id="dropdownProfileImage">{% else %}<span id="dropdownProfileInitial">{{ (session.full_name or role or 'U')[:1]|upper }}</span>{% endif %}</span>
+                            <div class="account-dropdown-identity"><strong>{{ session.full_name }}</strong><span>{{ role }}</span><small>NFH-HOA Officer Account</small></div>
+                        </div>
+                        <div class="account-dropdown-actions">
+                            <button type="button" role="menuitem" onclick="openAccountProfile()"><span class="account-item-icon"><i class="fa-regular fa-id-card"></i></span><span><strong>Account Details</strong><small>View your officer account information</small></span></button>
+                            <button type="button" role="menuitem" onclick="closeAccountMenus(); openModal('accountSecurityModal')"><span class="account-item-icon"><i class="fa-solid fa-key"></i></span><span><strong>Change Password</strong><small>Update your account security password</small></span></button>
+                        </div>
+                        <div class="account-menu-divider"></div>
+                        <button type="button" role="menuitem" class="account-signout" onclick="document.getElementById('logoutBtn').click()"><span class="account-item-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></span><span><strong>Sign Out</strong><small>End this secure session</small></span></button>
+                    </div>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}<div class="flash-messages">{% for category, message in messages %}<div class="alert alert-{{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+            {% endwith %}
+
+            <main class="content-body">
+                {% if role == 'Vice President' %}
+                <section id="officer-workload-tab" class="tab-content">
+                    <div class="section-header"><h2>Officer Workload</h2><p>Read-only operational monitoring. Reassignment and delegated approvals require separate HOA authorization.</p></div>
+                    <button class="btn" type="button" id="ot-workload-refresh">Refresh Workload</button>
+                    <p id="ot-workload-message" role="status">Open Officer Workload to view current counts.</p>
+                    <div class="ot-table-wrap"><table class="data-table" data-no-record-filters="1"><thead><tr><th>Officer Role</th><th>Total</th><th>Pending</th><th>In Progress</th><th>Completed</th><th>Overdue</th><th>Escalated</th></tr></thead><tbody id="ot-workload-rows"></tbody></table></div>
+                </section>
+                {% endif %}
+                <section id="officer-tasks-tab" class="tab-content">
+  <div class="section-header"><h2>My Assigned Tasks</h2><p>Tasks linked to existing authorized HOA records. Complete work using the original processing page.</p></div>
+  <div class="ot-counters">
+    <div class="ot-counter"><strong data-ot-counter="pending">0</strong><span>Pending</span></div>
+    <div class="ot-counter"><strong data-ot-counter="progress">0</strong><span>In Progress</span></div>
+    <div class="ot-counter"><strong data-ot-counter="high">0</strong><span>High Priority</span></div>
+    <div class="ot-counter"><strong data-ot-counter="overdue">0</strong><span>Overdue</span></div>
+    <div class="ot-counter"><strong data-ot-counter="completed">0</strong><span>Completed</span></div>
+  </div>
+  <div class="ot-filters">
+    <label>Search<input type="search" id="ot-search" placeholder="Task ID, type, source ID"></label>
+    <label>Status<select id="ot-status"><option value="">All statuses</option><option>Pending</option><option>In Progress</option><option>Escalated</option><option>Completed</option></select></label>
+    <label>Task Type<select id="ot-type"><option value="">All types</option><option>Property Claim</option><option>Request Concern</option><option>Document Request</option></select></label>
+    <label>Priority<select id="ot-priority"><option value="">All priorities</option><option>Normal</option><option>High</option><option>Urgent</option></select></label>
+    <label>Rows<select id="ot-size"><option>10</option><option>25</option><option>50</option></select></label>
+    <button class="btn" type="button" id="ot-reset">Reset</button><button class="btn" type="button" id="ot-refresh">Refresh</button>
+  </div>
+  <div class="ot-table-wrap"><table class="data-table" data-no-record-filters="1"><thead><tr><th>Task ID</th><th>Task Type</th><th>Related Record</th><th>Assigned Officer Role</th><th>Priority</th><th>Assigned At</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead><tbody id="ot-rows"><tr><td colspan="9">Open the tab to load assigned tasks.</td></tr></tbody></table></div>
+  <div class="ot-pagination"><span id="ot-message" role="status" aria-live="polite"></span><button class="btn" type="button" id="ot-prev">Previous</button><button class="btn" type="button" id="ot-next">Next</button></div>
+</section>
+                <section id="overview-tab" class="tab-content active nfh-dashboard-overview">
+                    <div class="card-grid live-metric-grid nfh-stats-grid" id="liveMetricGrid">
+                        {% if role == 'Secretary' %}
+                        <button type="button" class="stat-card metric-card metric-pending dashboard-action-card" data-tab-jump="assigned-tab"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="15" r="3"/><path d="M12 13.5V15l1 1"/></svg></div><div class="stat-details"><h3>Pending Requests</h3><p class="stat-number" data-metric="pending_requests">0</p></div></button>
+                        <div class="stat-card metric-card metric-correction"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></div><div class="stat-details"><h3>For Correction</h3><p class="stat-number" data-metric="for_correction">0</p></div></div>
+                        <button type="button" class="stat-card metric-card metric-checked dashboard-action-card" onclick="document.getElementById('readyReleaseQueue')?.scrollIntoView({behavior:'smooth',block:'start'})"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="stat-details"><h3>Ready for Release</h3><p class="stat-number" data-metric="ready_for_release">0</p></div></button>
+                        <div class="stat-card metric-card metric-approval"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 14h8"/><path d="m13 11 3 3-3 3"/></svg></div><div class="stat-details"><h3>Pending Executive Approval</h3><p class="stat-number" data-metric="pending_executive">0</p></div></div>
+                        {% elif role in ['President','Vice President','Board Director'] %}
+                        <button type="button" class="stat-card metric-card metric-approval dashboard-action-card" data-tab-jump="pres-approvals-tab"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg></div><div class="stat-details"><h3>Pending Request Approvals</h3><p class="stat-number" data-metric="pending_request_approvals">0</p></div></button>
+                        <button type="button" class="stat-card metric-card metric-fee dashboard-action-card" data-tab-jump="pres-fees-tab"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 7h5a3 3 0 0 1 0 6H8"/><path d="M8 10h6"/><path d="M8 16V7"/></svg></div><div class="stat-details"><h3>Pending Fee Approvals</h3><p class="stat-number" data-metric="pending_fee_approvals">0</p></div></button>
+                        <div class="stat-card metric-card metric-success"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/></svg></div><div class="stat-details"><h3>Recently Approved</h3><p class="stat-number" data-metric="recently_approved">0</p></div></div>
+                        <div class="stat-card metric-card metric-correction"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></div><div class="stat-details"><h3>For Correction</h3><p class="stat-number" data-metric="for_correction">0</p></div></div>
+                        {% elif role == 'Treasurer' %}
+                        <button type="button" class="stat-card metric-card metric-pending dashboard-action-card" data-tab-jump="treasurer-checking-tab"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg></div><div class="stat-details"><h3>Requests for Checking</h3><p class="stat-number" data-metric="requests_for_checking">0</p></div></button>
+                        <div class="stat-card metric-card metric-correction"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></div><div class="stat-details"><h3>For Correction</h3><p class="stat-number" data-metric="for_correction">0</p></div></div>
+                        <button type="button" class="stat-card metric-card metric-payment dashboard-action-card" data-tab-jump="payments-tab"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg></div><div class="stat-details"><h3>Ready for Payment &amp; Release</h3><p class="stat-number" data-metric="approved_unpaid">0</p></div></button>
+                        <div class="stat-card metric-card metric-success"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/></svg></div><div class="stat-details"><h3>Paid Requests</h3><p class="stat-number" data-metric="paid_requests">0</p></div></div>
+                        <button type="button" class="stat-card metric-card metric-dues dashboard-action-card" data-tab-jump="adjustments-tab"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="M12 14v3"/><path d="M12 19h.01"/></svg></div><div class="stat-details"><h3>Missing Monthly Dues</h3><p class="stat-number" data-metric="missing_dues">0</p></div></button>
+                        <div class="stat-card metric-card metric-balance"><div class="stat-icon metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7V5a2 2 0 0 0-2-2H5a3 3 0 0 0 0 6h15v10a2 2 0 0 1-2 2H5a3 3 0 0 1-3-3V6"/><path d="M16 13h4"/></svg></div><div class="stat-details"><h3>Total Outstanding Dues</h3><p class="stat-number" data-metric="outstanding_dues_total" data-currency="true">₱0.00</p></div></div>
+                        {% endif %}
+                    </div>
+                    {% if role in ['Secretary','Treasurer','Admin'] %}
+                    <div class="content-card release-queue-card" id="readyReleaseQueue">
+                        <div class="release-queue-header">
+                            <div>
+                                <div class="release-title-row">
+                                    <h2>Ready for Release</h2>
+                                    <span class="release-count">{{ ready_release_requests|length }}</span>
+                                </div>
+                                <p class="card-subtitle">Approved and payment-cleared requests awaiting actual issuance.</p>
+                            </div>
+                        </div>
+                        {% if ready_release_requests %}
+                        <div class="table-responsive release-table-wrap">
+                            <table class="data-table release-queue-table">
+                                <thead><tr><th>Request</th><th>Homeowner</th><th>Type</th><th>Action</th></tr></thead>
+                                <tbody>
+                                {% for req in ready_release_requests %}
+                                <tr data-search-extra="Block {{ req.block or '' }} Lot {{ req.lot or '' }}">
+                                    <td><code>{{ req.id }}</code></td>
+                                    <td>{{ req.homeowner }}</td>
+                                    <td>{{ req.request_type }}</td>
+                                    <td><button type="button" class="btn btn-sm btn-primary" data-issue-request-id="{{ req.id|e }}" data-issue-homeowner="{{ req.homeowner|e }}" data-issue-type="{{ req.request_type|e }}">Mark as Issued</button></td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="release-empty-state"><i class="fa-regular fa-circle-check" aria-hidden="true"></i><span>No requests are currently waiting for release.</span></div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="content-card nfh-activity-panel recent-activity-panel">
+                        <div class="card-header activity-header"><div><h2>Role Activity</h2></div></div>
+                        <div class="activity-list" aria-label="Recent meaningful activity">
+                        {% set ns = namespace(shown=0) %}
+                        {% for audit in audits|reverse %}
+                          {% if ns.shown < 8 and audit.action not in ['User Login','Login','Page View','Dashboard View','Notification Read'] %}
+                            {% set ns.shown = ns.shown + 1 %}
+                            {% set a = audit.action|lower %}
+                            <article class="activity-entry" data-action="{{ audit.action|e }}">
+                              <div class="activity-icon" aria-hidden="true">
+                                {% if 'approve' in a or 'paid' in a or 'complete' in a %}<i class="fa-solid fa-circle-check"></i>
+                                {% elif 'correction' in a or 'return' in a %}<i class="fa-solid fa-rotate-left"></i>
+                                {% elif 'reject' in a or 'cancel' in a %}<i class="fa-solid fa-circle-xmark"></i>
+                                {% elif 'due' in a or 'payment' in a or 'fee' in a %}<i class="fa-solid fa-receipt"></i>
+                                {% elif 'forward' in a or 'check' in a or 'review' in a %}<i class="fa-solid fa-clipboard-check"></i>
+                                {% else %}<i class="fa-regular fa-file-lines"></i>{% endif %}
+                              </div>
+                              <div class="activity-content">
+                                <div class="activity-title-row"><strong>{{ audit.action }}</strong><time class="activity-time" data-activity-time="{{ audit.timestamp }}">{{ audit.timestamp }}</time></div>
+                                <div class="activity-target">{{ audit.item or 'System activity' }}</div>
+                                {% if audit.prev_val and audit.new_val and audit.prev_val != 'None' and audit.new_val != 'None' %}<p class="activity-description">Status changed from <span>{{ audit.prev_val }}</span> to <span>{{ audit.new_val }}</span>.</p>
+                                {% elif audit.new_val and audit.new_val != 'None' %}<p class="activity-description">Updated to <span>{{ audit.new_val }}</span>.</p>
+                                {% else %}<p class="activity-description">Recorded by {{ audit.username }}.</p>{% endif %}
+                              </div>
+                            </article>
+                          {% endif %}
+                        {% endfor %}
+                        {% if ns.shown == 0 %}<div class="activity-empty"><i class="fa-regular fa-clock"></i><strong>No recent activity.</strong></div>{% endif %}
+                        </div>
+                    </div>
+                </section>
+
+                {% if role in ['Secretary','Admin'] %}
+                <section id="assigned-tab" class="tab-content">
+                    <div class="content-card review-queue-card"><div class="card-header review-card-header"><div><h2>Requests for Review</h2><p class="card-subtitle">Review request details, status, attachments, and required actions in one organized view.</p></div></div>
+                        <div class="table-responsive"><table class="data-table review-queue-table"><thead><tr><th>Request</th><th>Homeowner</th><th>Dues Status</th><th>Submitted</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>
+                        {% for req in assigned_requests %}
+                        <tr data-search-extra="Block {{ req.block or '' }} Lot {{ req.lot or '' }}">
+                            <td><div class="request-cell"><strong>{{ req.request_type }}</strong><code>{{ req.id }}</code></div></td>
+                            <td>{{ req.homeowner }}</td>
+                            <td><span class="status-pill {{ 'status-rejected' if req.dues.unpaid_months else 'status-approved' }}">{{ 'Outstanding Dues' if req.dues.unpaid_months else 'Clear' }}</span>{% if req.dues.unpaid_months %}<small class="dues-month-count">{{ req.dues.unpaid_months }} month{{ 's' if req.dues.unpaid_months != 1 else '' }}</small>{% endif %}</td>
+                            <td class="submitted-cell">{{ req.date_submitted }}</td>
+                            <td><span class="status-pill status-{{ req.status|replace(' ','-')|lower }}">{{ req.status }}</span></td>
+                            <td><span class="pay-pill pay-{{ req.payment_status|lower }}">{{ req.payment_status }}</span></td>
+                            <td><div class="review-actions"><a class="btn btn-sm btn-primary" href="{{ url_for('request_review', req_id=req.id) }}" data-loading-text="Loading request review…">Review Request</a>
+                                </div></td>
+                        </tr>{% else %}<tr><td colspan="7" class="text-center">No assigned requests pending.</td></tr>{% endfor %}
+                        </tbody></table></div>
+                    </div>
+                </section>
+                {% endif %}
+
+                {% if role == 'Treasurer' or role == 'Admin' %}
+                {% if role == 'Treasurer' %}
+                <section id="treasurer-checking-tab" class="tab-content">
+                    <div class="content-card review-queue-card"><div class="card-header review-card-header"><div><h2>Requests for Initial Checking</h2><p class="card-subtitle">Gate Pass requests are checked by the Treasurer. Vehicle Sticker and Renters/Tenants requests may also be checked here when not already assigned to the Secretary.</p></div></div>
+                        <div class="table-responsive"><table class="data-table review-queue-table"><thead><tr><th>Request</th><th>Homeowner</th><th>Dues Status</th><th>Submitted</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>
+                        {% for req in checking_requests %}
+                        <tr data-search-extra="Block {{ req.block or '' }} Lot {{ req.lot or '' }}">
+                            <td><div class="request-cell"><strong>{{ req.request_type }}</strong><code>{{ req.id }}</code></div></td>
+                            <td>{{ req.homeowner }}</td>
+                            <td><span class="status-pill {{ 'status-rejected' if req.dues.unpaid_months else 'status-approved' }}">{{ 'Outstanding Dues' if req.dues.unpaid_months else 'Clear' }}</span>{% if req.dues.unpaid_months %}<small class="dues-month-count">{{ req.dues.unpaid_months }} month{{ 's' if req.dues.unpaid_months != 1 else '' }}</small>{% endif %}</td>
+                            <td class="submitted-cell">{{ req.date_submitted }}</td>
+                            <td><span class="status-pill status-{{ req.status|replace(' ','-')|lower }}">{{ req.status }}</span></td>
+                            <td><span class="pay-pill pay-{{ req.payment_status|lower }}">{{ req.payment_status }}</span></td>
+                            <td><div class="review-actions"><a class="btn btn-sm btn-primary" href="{{ url_for('request_review', req_id=req.id) }}" data-loading-text="Loading request review…">Review Request</a></div></td>
+                        </tr>{% else %}<tr><td colspan="7" class="text-center">No requests currently require Treasurer checking.</td></tr>{% endfor %}
+                        </tbody></table></div>
+                    </div>
+                </section>
+                {% endif %}
+                <section id="payments-tab" class="tab-content">
+                    <div class="content-card nfh-payfind-toolbar" role="search" aria-label="Payment and Release Find Records">
+                      <div class="card-header"><div><h2>Find Records</h2><p class="card-subtitle">Search all payment and release records.</p></div></div>
+                      <div class="nfh-payfind-fields">
+                        <label>Search Records<input type="search" id="prSearch" class="form-input" placeholder="Search by homeowner, Request ID, Block/Lot, or service..." autocomplete="off"></label>
+                        <label>Record Category<select id="prCategory" class="form-input"><option value="all">All Records</option><option value="ready">Payment &amp; Document Release</option><option value="awaiting">Paid — Awaiting Physical Release</option><option value="completed">Completed Payment &amp; Release Records</option></select></label>
+                        <label>Sort Order<select id="prSort" class="form-input"><option value="desc">Newest First</option><option value="asc">Oldest First</option></select></label>
+                        <button type="button" id="prReset" class="btn btn-secondary">Reset</button>
+                      </div><p class="card-subtitle" id="prState" role="status" aria-live="polite"></p>
+                    </div>
+                    <div class="content-card payment-release-card" data-pr-section="ready">
+                        <div class="card-header"><div><h2>Payment &amp; Document Release</h2><p class="card-subtitle">For paid services, the normal NFH-HOA process is one face-to-face visit: receive the cash payment, hand over the prepared document, then confirm both actions here.</p></div></div>
+                        <div class="workflow-callout"><i class="fa-solid fa-person-circle-check"></i><div><strong>One-visit workflow</strong><span>Approved request → Treasurer receives cash → document is handed to homeowner → system records payment confirmation, the physical Official Receipt Number, System Reference, physical release, request history, and completion.</span></div></div>
+                        <div class="table-responsive"><table data-no-record-filters="1" class="data-table professional-request-table"><thead><tr><th>Request</th><th>Homeowner</th><th>Service</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>
+                        {% set payment_ns = namespace(count=0) %}
+                        {% for req in requests %}{% if req.status in ['Ready for Payment & Release','Awaiting Payment Verification','Approved'] and req.payment_status == 'Unpaid' %}
+                        {% set payment_ns.count = payment_ns.count + 1 %}
+                        <tr data-search-extra="Block {{ req.block or '' }} Lot {{ req.lot or '' }}">
+                            <td><code>{{ req.id }}</code></td><td>{{ req.homeowner }}</td><td>{{ req.request_type }}</td><td><strong>₱{{ "%.2f"|format(req.fee) }}</strong></td>
+                            <td><span class="status-pill status-ready-for-payment-release">Ready for Payment &amp; Release</span></td>
+                            <td><div class="review-actions"><a class="btn btn-sm btn-secondary" href="{{ url_for('request_review', req_id=req.id) }}" data-loading-text="Loading request review…">Review</a><a class="btn btn-sm btn-secondary" href="{{ url_for('request_document_pdf', req_id=req.id) }}" target="_blank" rel="noopener" data-loading-text="Preparing official document…">Preview Document</a><button type="button" class="btn btn-sm btn-success" data-payment-request-id="{{ req.id|e }}">Process Payment &amp; Release</button></div></td>
+                        </tr>{% endif %}{% endfor %}
+                        {% if payment_ns.count == 0 %}<tr><td colspan="6" class="text-center">No requests are currently ready for payment and release.</td></tr>{% endif %}
+                        </tbody></table></div><div class="nfh-pr-pager" data-pr-pager="ready"></div>
+                    </div>
+
+                    <div class="content-card" data-pr-section="awaiting" style="margin-top:18px;">
+                        <div class="card-header"><div><h2>Paid — Awaiting Physical Release</h2><p class="card-subtitle">Use this only for the uncommon case where payment was accepted but the document could not be handed over during the same visit.</p></div></div>
+                        <div class="table-responsive"><table data-no-record-filters="1" class="data-table"><thead><tr><th>Request</th><th>Homeowner</th><th>Service</th><th>System Ref.</th><th>Payment Date / OR Ref.</th><th>Action</th></tr></thead><tbody>
+                        {% set paid_wait = namespace(count=0) %}
+                        {% for req in requests %}{% if req.status == 'Paid - Awaiting Release' and req.payment_status == 'Paid' %}{% set paid_wait.count = paid_wait.count + 1 %}
+                        <tr><td><code>{{ req.id }}</code></td><td>{{ req.homeowner }}</td><td>{{ req.request_type }}</td><td>{{ req.payment_tx.system_reference if req.payment_tx else req.payment_reference or '—' }}</td><td>{% if req.payment_tx %}{{ req.payment_tx.payment_date or '—' }}{% if req.payment_tx.official_receipt_no %}<br><small>OR/Ref: {{ req.payment_tx.official_receipt_no }}</small>{% endif %}{% else %}—{% endif %}</td><td><div class="review-actions"><a class="btn btn-sm btn-secondary" href="{{ url_for('request_document_pdf', req_id=req.id, download=1, issue_date=req.payment_tx.payment_date if req.payment_tx else '') }}" download data-document-download><i class="fa-solid fa-download" aria-hidden="true"></i> Download PDF</a><button type="button" class="btn btn-sm btn-primary" data-paid-release-id="{{ req.id|e }}" data-issue-homeowner="{{ req.homeowner|e }}" data-issue-type="{{ req.request_type|e }}">Confirm Release</button></div></td></tr>
+                        {% endif %}{% endfor %}
+                        {% if paid_wait.count == 0 %}<tr><td colspan="6" class="text-center">No paid requests are waiting for release.</td></tr>{% endif %}
+                        </tbody></table></div><div class="nfh-pr-pager" data-pr-pager="awaiting"></div>
+                    </div>
+
+                    <div class="content-card" data-pr-section="completed" style="margin-top:18px;">
+                        <div class="card-header"><div><h2>Completed Payment &amp; Release Records</h2><p class="card-subtitle">This is a request-workflow record showing payment confirmation and physical document release. Official accounting receipts remain under the HOA's existing financial procedure.</p></div></div>
+                        <div class="table-responsive"><table data-no-record-filters="1" class="data-table"><thead><tr><th>Request</th><th>Homeowner</th><th>Service</th><th>Amount</th><th>System Ref.</th><th>Payment / Release</th><th>Document</th></tr></thead><tbody>
+                        {% set completed_pay = namespace(count=0) %}
+                        {% for req in requests %}{% if req.payment_tx %}{% set completed_pay.count = completed_pay.count + 1 %}
+                        <tr><td><code>{{ req.id }}</code></td><td>{{ req.homeowner }}</td><td>{{ req.request_type }}</td><td>₱{{ "%.2f"|format(req.fee) }}</td><td>{{ req.payment_tx.system_reference or '—' }}</td><td>{{ req.payment_tx.payment_date or '—' }}{% if req.payment_tx.official_receipt_no %}<br><small>OR/Ref: {{ req.payment_tx.official_receipt_no }}</small>{% endif %}<br><span class="status-pill {{ 'status-completed' if req.payment_tx.document_released else 'status-pending' }}">{{ 'Released' if req.payment_tx.document_released else 'Paid – Awaiting Release' }}</span></td><td><a class="btn btn-sm btn-secondary" href="{{ url_for('request_document_pdf', req_id=req.id, download=1) }}" download data-document-download><i class="fa-solid fa-download" aria-hidden="true"></i> Download PDF</a></td></tr>
+                        {% endif %}{% endfor %}
+                        {% if completed_pay.count == 0 %}<tr><td colspan="7" class="text-center">No recorded face-to-face payments yet.</td></tr>{% endif %}
+                        </tbody></table></div><div class="nfh-pr-pager" data-pr-pager="completed"></div>
+                    </div>
+                </section>
+
+                <section id="fee-mgmt-tab" class="tab-content">
+                    <div class="content-card"><div class="card-header"><h2>Standard Pricing Configuration</h2></div>
+                        <div class="table-responsive"><table class="data-table"><thead><tr><th>Item Name</th><th>Active</th><th>Proposed</th><th>Status</th><th>Propose</th></tr></thead><tbody>
+                        {% for name, fee in fees.items() %}
+                        <tr><td><strong>{{ name }}</strong></td><td>₱{{ "%.2f"|format(fee.amount) }}</td><td>{% if fee.proposed_amount %}<strong>₱{{ "%.2f"|format(fee.proposed_amount) }}</strong>{% else %}-{% endif %}</td>
+                            <td><span class="status-pill status-{{ fee.status|replace(' ','-')|lower }}">{{ fee.status }}</span></td>
+                            <td><form action="{{ url_for('propose_fee') }}" method="POST" class="inline-form" data-system-confirm="Submit this fee proposal for Executive approval?" data-confirm-title="Submit Fee Proposal" data-confirm-text="Submit Proposal"><input type="hidden" name="fee_name" value="{{ name }}"><input type="number" step="0.01" name="amount" required placeholder="New ₱" class="form-input-sm"><button type="submit" class="btn btn-sm btn-primary">Propose</button></form></td>
+                        </tr>{% endfor %}
+                        </tbody></table></div>
+                    </div>
+                </section>
+
+                <section id="adjustments-tab" class="tab-content">
+                    <div class="nfh-advance-tabs" role="tablist" aria-label="Monthly Dues Management">
+                      <button type="button" role="tab" id="nfhAdjustmentTab" aria-selected="true" aria-controls="nfhAdjustmentPane" class="active">Monthly Dues Adjustment</button>
+                      <button type="button" role="tab" id="nfhAdvanceTab" aria-selected="false" aria-controls="nfhAdvancePane">Monthly Dues Advance Payment</button>
+                    </div><div id="nfhAdjustmentPane" role="tabpanel" aria-labelledby="nfhAdjustmentTab">
+
+                    <div class="content-card dues-management-card">
+                        <div class="card-header dues-section-heading">
+                            <div>
+                                <h2>Apply Missing Monthly Dues</h2>
+                                <p class="card-subtitle">Find an active homeowner by name or Homeowner ID, then record the number of missing monthly dues. The system uses the configured monthly rate and notifies the homeowner after the entry is saved.</p>
+                            </div>
+                        </div>
+
+                        <div class="modal-body dues-entry-grid" style="padding:15px 0;">
+                            <div class="form-group homeowner-lookup-group">
+                                <label for="adjHomeownerSearch">Find Homeowner</label>
+                                <div class="homeowner-search-shell">
+                                    <div class="homeowner-search-wrap">
+                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                        <input type="search" id="adjHomeownerSearch" class="form-input homeowner-search-input"
+                                               placeholder="Search by homeowner name or Homeowner ID"
+                                               autocomplete="off" aria-autocomplete="list" aria-controls="adjHomeownerResults"
+                                               oninput="filterAdjustmentHomeowners()" onfocus="filterAdjustmentHomeowners()">
+                                    </div>
+                                    <div id="adjHomeownerResults" class="homeowner-search-results" role="listbox" hidden>
+                                    {% for h in homeowners %}
+                                    <button type="button" class="homeowner-search-result" role="option"
+                                            data-user-id="{{ h.id }}"
+                                            data-search="{{ (h.full_name ~ ' ' ~ (h.homeowner_public_id or ''))|lower }}"
+                                            data-name="{{ h.full_name }}"
+                                            data-public-id="{{ h.homeowner_public_id or 'No Homeowner ID' }}"
+                                            data-property="Block {{ h.block or '—' }}, Lot {{ h.lot or '—' }}"
+                                            data-outstanding="{{ h.outstanding_balance|float }}"
+                                            data-unpaid-months="{{ h.unpaid_months|int }}"
+                                            onclick="selectAdjustmentHomeowner(this)">
+                                        <span class="homeowner-result-main"><strong>{{ h.full_name }}</strong><small>{{ h.homeowner_public_id or 'No Homeowner ID' }}</small></span>
+                                        <span class="homeowner-result-side"><span class="homeowner-result-property">Blk {{ h.block or '—' }} · Lot {{ h.lot or '—' }}</span><small class="homeowner-result-balance">{% if h.unpaid_months %}{{ h.unpaid_months }} unpaid · ₱{{ '%.2f'|format(h.outstanding_balance|float) }}{% else %}No current outstanding dues{% endif %}</small></span>
+                                    </button>
+                                    {% else %}
+                                    <div class="homeowner-search-empty">No active homeowner records are available.</div>
+                                    {% endfor %}
+                                        <div id="adjHomeownerNoMatch" class="homeowner-search-empty" hidden>No matching homeowner found.</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="adjUserId" value="">
+                                <small class="field-help">Search using the homeowner's name or system-generated Homeowner ID. You no longer need to scan a long dropdown list.</small>
+                                <div id="adjSelectedHomeowner" class="selected-homeowner-card" hidden>
+                                    <div class="selected-homeowner-icon"><i class="fa-solid fa-user-check" aria-hidden="true"></i></div>
+                                    <div><span>Selected Homeowner</span><strong id="adjSelectedHomeownerName">—</strong><small id="adjSelectedHomeownerMeta">—</small><small id="adjSelectedHomeownerBalance" class="selected-homeowner-balance">—</small></div>
+                                    <button type="button" class="btn btn-sm btn-secondary" onclick="clearAdjustmentHomeowner()">Change</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group dues-field-card">
+                                <label>Monthly Due (₱) <small>(Configured rate)</small></label>
+                                <input type="number" step="1" id="adjMonthlyDue" class="form-input" value="{{ official_monthly_due|int }}" readonly>
+                            </div>
+                            <div class="form-group dues-field-card">
+                                <label for="adjEndMonth">Latest Missing Month</label>
+                                <input type="month" id="adjEndMonth" class="form-input" max="{{ now_month if now_month is defined else '' }}" onchange="calculateAdjustment()">
+                                <small class="field-help">Choose the latest month included in the missing-dues period.</small>
+                            </div>
+                            <div class="form-group dues-field-card">
+                                <label for="adjMissing">Number of Missing Months</label>
+                                <input type="number" min="1" max="120" id="adjMissing" class="form-input" placeholder="e.g. 3" oninput="calculateAdjustment()">
+                            </div>
+                            <div class="form-group dues-field-card">
+                                <label>Total Amount Due (₱) <small>(Automatically computed)</small></label>
+                                <input type="number" step="1" id="adjProposed" class="form-input" placeholder="0" readonly>
+                            </div>
+                            <div id="adjPeriodPreview" class="dues-period-preview" hidden><i class="fa-regular fa-calendar" aria-hidden="true"></i><div><span>Missing Period</span><strong id="adjPeriodPreviewText">—</strong></div></div>
+                            <div id="nfhPaymentPlanPanel" class="nfh-plan-inline form-group dues-reason-field">
+  <h3>Payment Plan Arrangement</h3>
+  <label><input type="checkbox" id="nfhPlanEnabled" onchange="nfhUpdatePlanPreview()"> Set Up Payment Plan for Homeowner</label>
+  <div id="nfhPlanFields" hidden>
+   <div class="nfh-plan-grid">
+    <label>Total Outstanding Amount (₱)<input class="form-input" id="nfhPlanOutstanding" type="text" readonly value="₱0"></label>
+    <label>Monthly Installment Amount (₱)<input class="form-input" id="nfhPlanInstallment" type="text" readonly value="—"></label>
+    <label>Payment Duration (months)<input class="form-input" type="number" id="nfhPlanMonths" min="1" max="240" step="1" oninput="nfhUpdatePlanPreview()"></label>
+    <label>First Payment Due Date<input class="form-input" type="date" id="nfhPlanFirstDue" onchange="nfhUpdatePlanPreview()"></label>
+    <label>Number of Installments<input class="form-input" id="nfhPlanInstallmentCount" type="number" readonly></label>
+   </div>
+   <div class="nfh-plan-schedule-field">
+    <span class="nfh-plan-schedule-title" id="nfhPlanScheduleLabel">Payment Schedule Preview</span>
+    <div class="nfh-plan-schedule-scroll" role="region" aria-labelledby="nfhPlanScheduleLabel" tabindex="0">
+     <table class="nfh-plan-schedule-table" id="nfhPlanSchedule" aria-describedby="nfhPlanScheduleLabel">
+      <thead><tr><th scope="col">Installment</th><th scope="col">Due Date</th><th scope="col" class="nfh-plan-schedule-amount">Amount (₱)</th></tr></thead>
+      <tbody id="nfhPlanScheduleBody"><tr><td colspan="3" class="nfh-plan-schedule-placeholder">Set the duration and first payment due date to preview installments.</td></tr></tbody>
+      <tfoot><tr><th scope="row" colspan="2">Total</th><td id="nfhPlanScheduleTotal" class="nfh-plan-schedule-amount">₱0</td></tr></tfoot>
+     </table>
+    </div>
+   </div>
+   <label>Payment Plan Remarks<textarea class="form-input" id="nfhPlanRemarks" rows="3" readonly></textarea></label>
+   <p class="field-help">Payment plans cover existing unpaid dues and do not include future monthly dues.</p>
+  </div>
+</div>
+                            <div class="form-group dues-reason-field">
+                                <label for="adjReason">Reason</label>
+                                <textarea id="adjReason" class="form-input" rows="3" placeholder="State the reason for recording the missing dues..."></textarea>
+                            </div>
+                            <div class="dues-entry-action">
+                                <button type="button" class="btn btn-primary" onclick="submitAdjustment()"><i class="fa-solid fa-plus" aria-hidden="true"></i> Apply Missing Dues &amp; Notify Homeowner</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-card dues-clearance-panel" style="margin-top:18px;">
+                        <div class="card-header dues-section-heading">
+                            <div>
+                                <h2>Monthly Dues Clearance</h2>
+                                <p class="card-subtitle">Only homeowners with currently outstanding monthly dues are listed. Use the record finder to search by name, Homeowner ID, Block, Lot, missing months, or amount.</p>
+                            </div>
+                            <span class="record-count-pill">{{ outstanding_dues_homeowners|length }} outstanding</span>
+                        </div>
+                        <div class="dues-clearance-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Mark dues as paid only after the Treasurer has received the homeowner's actual face-to-face cash payment for all currently outstanding monthly dues.</span></div>
+                        <div class="table-responsive">
+                            <table class="data-table outstanding-dues-table" id="outstandingDuesTable" data-search-placeholder="Name, Homeowner ID, block, lot…">
+                                <thead><tr><th>Homeowner</th><th>Homeowner ID</th><th>Block / Lot</th><th>Missing Months</th><th>Outstanding Amount</th><th>Oldest Unpaid Due</th><th>Action</th></tr></thead>
+                                <tbody>
+                                {% for h in outstanding_dues_homeowners %}
+                                <tr data-search-extra="{{ h.full_name }} {{ h.homeowner_public_id or '' }} {{ h.block or '' }} {{ h.lot or '' }}">
+                                    <td><strong>{{ h.full_name }}</strong></td>
+                                    <td><code>{{ h.homeowner_public_id or '—' }}</code></td>
+                                    <td>Blk {{ h.block or '—' }} / Lot {{ h.lot or '—' }}</td>
+                                    <td><span class="dues-count-badge">{{ h.unpaid_months }}</span></td>
+                                    <td><strong>₱{{ "%.2f"|format(h.outstanding_balance|float) }}</strong></td>
+                                    <td>{{ h.oldest_unpaid_due_display or '—' }}</td>
+                                    <td><button type="button" class="btn btn-sm btn-success" data-dues-user-id="{{ h.id }}" data-dues-homeowner="{{ h.full_name }}" data-dues-homeowner-id="{{ h.homeowner_public_id or '' }}" data-dues-missing="{{ h.unpaid_months|int }}" data-dues-total="{{ h.outstanding_balance|float }}" data-dues-oldest="{{ h.oldest_unpaid_due_display or '' }}" data-dues-periods="{{ h.unpaid_periods_display or '' }}" onclick="settleMonthlyDuesFromButton(this)">Record Payment</button></td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="7" class="text-center">No homeowners currently have outstanding monthly dues.</td></tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="content-card" style="margin-top:18px;">
+                        <div class="card-header"><div><h2>Missing Dues History</h2><p class="card-subtitle">Previous missing-dues entries remain available for review and audit reference.</p></div></div>
+                        <div class="table-responsive"><table class="data-table"><thead><tr><th>Homeowner</th><th>Monthly Due</th><th>Missing</th><th>Total</th><th>Reason</th><th>Applied By</th><th>Date</th></tr></thead><tbody>
+                        {% for a in financial_adjustments %}
+                        <tr><td>{{ a.homeowner_name }}</td><td>₱{{ "%.2f"|format(a.monthly_due) }}</td><td>{{ a.missing_months }}</td><td>₱{{ "%.2f"|format(a.proposed_adjustment) }}</td><td>{{ a.reason or '-' }}</td><td>{{ a.submitted_by }}</td><td>{{ a.created_at }}</td></tr>
+                        {% else %}<tr><td colspan="7" class="text-center">No adjustments on record.</td></tr>{% endfor %}
+                        </tbody></table></div>
+                    </div>
+                    </div><div id="nfhAdvancePane" role="tabpanel" aria-labelledby="nfhAdvanceTab" hidden>
+                      <div class="content-card"><div class="card-header"><h2>Monthly Dues Advance Payment</h2><p class="card-subtitle">Record only face-to-face verified payments for future billing months. The full applicable dues amount must be paid.</p></div>
+                      <div class="nfh-advance-finder record-filter-panel" aria-label="Find Records: active homeowners"><div class="record-filter-header"><div class="record-filter-title"><strong>Find Records</strong><small>Search active homeowners in the database</small></div></div><div class="nfh-advance-finder-controls"><label for="nfhAdvanceSearch">Search Homeowner<input id="nfhAdvanceSearch" type="search" class="form-input" placeholder="Search by name, Homeowner ID, Block or Lot..." autocomplete="off"></label><label for="nfhAdvanceSort">Sort By<select id="nfhAdvanceSort" class="form-input"><option value="name">Homeowner</option><option value="block">Block/Lot</option><option value="outstanding">Outstanding Dues</option></select></label><label for="nfhAdvanceOrder">Order<select id="nfhAdvanceOrder" class="form-input"><option value="asc">Ascending</option><option value="desc">Descending</option></select></label><button type="button" id="nfhAdvanceReset" class="record-filter-clear">Reset</button></div></div>
+                      <div class="table-responsive"><table class="data-table" data-no-record-filters="1"><thead><tr><th>Homeowner</th><th>Block/Lot</th><th>Outstanding Dues</th><th>Advance Coverage</th><th>Action</th></tr></thead><tbody id="nfhAdvanceHomeowners"><tr><td colspan="5">Loading homeowners…</td></tr></tbody></table></div></div>
+                      <div class="content-card" id="nfhAdvanceFormPanel" hidden><div class="card-header"><h2>Record Advance Payment</h2><p id="nfhAdvanceSelected"></p></div>
+                      <form id="nfhAdvanceForm" class="nfh-advance-grid">
+                        <label>Monthly Dues Rate <input id="nfhAdvanceRate" readonly class="form-input"></label>
+                        <label>Current Outstanding <input id="nfhAdvanceOutstanding" readonly class="form-input"></label>
+                        <label>Starting Billing Month <input type="month" id="nfhAdvanceStart" required class="form-input"></label>
+                        <label>Number of Future Months <input type="number" id="nfhAdvanceMonths" value="1" min="1" max="60" required class="form-input"></label>
+                        <label>Ending Billing Month <input id="nfhAdvanceEnd" readonly class="form-input"></label>
+                        <label>Gross Advance Amount <input id="nfhAdvanceGross" readonly class="form-input"></label>
+                        <input id="nfhAdvanceCash" type="hidden">
+                        <label>Cash Actually Received <input id="nfhAdvanceReceived" type="number" min="1" step="1" required class="form-input"></label>
+                        <label>Payment Method <select id="nfhAdvanceMethod" class="form-input"><option>Cash</option></select></label>
+                        <label>OR / Receipt Number <input id="nfhAdvanceReference" maxlength="120" required class="form-input"></label>
+                        <label>Payment Date <input id="nfhAdvanceDate" type="date" required class="form-input"></label>
+                        <label class="nfh-advance-wide"><input id="nfhAdvanceRaffleDistributed" type="checkbox"> I confirm the eligible raffle tickets were physically handed to the homeowner during this face-to-face transaction (check only if actually issued).</label>
+                        <label class="nfh-advance-wide">Remarks <textarea id="nfhAdvanceRemarks" class="form-input" maxlength="1000"></textarea></label>
+                        <div class="nfh-advance-wide" id="nfhAdvancePromoSummary" aria-live="polite" style="padding:14px;border:1px solid #E2EBE2;background:#F4F9F4;color:#1B4332;border-radius:8px">Advance Payment Promo: Select a homeowner to view existing rewards. Full January–December coverage grants up to four free certificates; the 12 raffle tickets require verification by January 31.</div>
+                        <p class="nfh-advance-wide" id="nfhAdvanceNotice" role="status"></p>
+                        <div class="nfh-advance-wide"><button type="submit" id="nfhAdvanceSubmit" class="btn btn-primary">Confirm Verified Advance Payment</button></div>
+                      </form></div>
+
+                    </div>
+                </section>
+
+                {% if role == 'Treasurer' %}<section id="promo-codes-tab" class="tab-content"><div class="content-card"><div class="card-header"><h2>Promo Code Management</h2><p>Manage promotional codes generated from qualifying full-year advance payments.</p></div><div data-nfh-promo-table></div></div></section>{% endif %}
+                <section id="financial-import-tab" class="tab-content">
+                  <div class="content-card"><div class="card-header"><div><h2>Import Existing Data</h2><p>Import and validate historical homeowner financial records using the Statement of Account template.</p></div></div>
+                    <form id="nfhFinancialImportForm" class="import-form"><input type="hidden" name="kind" id="nfhImportKind" value="soa">
+                      <div class="form-group"><label>Search Homeowner</label><input class="form-input" id="nfhImportHomeownerSearch" type="search" placeholder="Type name, homeowner ID, block, or lot" autocomplete="off"><div id="nfhImportHomeownerMatches" class="nfh-homeowner-results"></div><input type="hidden" name="homeowner_id" id="nfhImportHomeownerId"></div>
+                      <div class="form-group"><a id="nfhImportTemplateLink" href="#">Download Statement of Account template</a></div>
+                      <div class="form-group"><label>Upload Excel or CSV (SOA requires the downloaded Excel template)</label><input type="file" name="file" class="form-input" accept=".csv,.xlsx" required></div><button class="btn btn-primary" type="submit">Preview &amp; Validate</button></form>
+                    <div id="nfhFinancialImportOutput" aria-live="polite"></div>
+                  </div>
+                {% if role == 'Treasurer' %}
+                <section id="homeowner-membership-import-panel" class="tab-content nfh-membership-inline" style="display:block" aria-label="Homeowner status reconciliation">
+                  <div class="content-card"><div class="card-header"><div><h2>Homeowner Status Reconciliation</h2><p>Separate from SOA import: validate the registered HOA member roster. Treasurer changes require Admin approval and never disable homeowner login access.</p></div></div>
+                    <p><a class="btn btn-secondary" href="/treasurer/membership/template"><i class="fa-solid fa-file-excel"></i> Download Blank Homeowner Status Template</a></p>
+                    <form id="nfhMembershipForm" class="import-form"><label>Upload completed Excel or CSV (all four fields entered manually)<input class="form-input" name="file" type="file" accept=".xlsx,.csv" required></label><button type="submit" class="btn btn-primary">Validate Membership Status</button></form>
+                    <div id="nfhMembershipOutput" role="status" aria-live="polite"></div><h3>Pending / Reconciled Homeowner Records</h3><div><input id="nfhMembershipSearch" class="form-input" type="search" placeholder="Search ID, Name or Address"><select id="nfhMembershipFilter" class="form-input"><option value="All">All</option><option value="Pending Account Match">Pending Account Match</option><option value="Requires Review">Requires Review</option><option value="Reconciled">Reconciled</option></select><button type="button" class="btn btn-secondary" id="nfhMembershipRecordsRefresh">Refresh</button></div><div id="nfhMembershipRecords" role="status"></div>
+                  </div>
+                </section>
+                {% endif %}
+                </section>
+                {% if role == 'Treasurer' %}<section id="historical-payment-tab" class="tab-content">
+ <div class="content-card nfh-hp"><div class="card-header"><div><h2>Historical Payment</h2><p>Verify face-to-face cash payments against unpaid Request and Others obligations imported through Historical SOA.</p></div></div>
+ <div class="nfh-hp-summary"><div><span>Historical Unpaid Request Fees</span><strong id="hpUnpaid">₱0.00</strong></div><div><span>Historical Unpaid Others</span><strong id="hpOthersUnpaid">₱0.00</strong></div><div><span>Historical Fees Paid</span><strong id="hpPaid">₱0.00</strong></div><div><span>Homeowners with Unpaid Fees</span><strong id="hpHomeowners">0</strong></div></div>
+ <div class="nfh-hp-finder record-filter-panel" aria-label="Find Records: historical payments"><div class="record-filter-header"><div class="record-filter-title"><strong>Find Records</strong><small>Search and filter historical Request and Others charges</small></div></div><div class="nfh-hp-toolbar"><label>Find Records<div class="nfh-owner-box"><input id="hpSearch" class="form-input" placeholder="Search by name, Homeowner ID, Block or Lot..." autocomplete="off"><div id="hpSuggestions" class="nfh-owner-suggestions" role="listbox" hidden></div></div></label><label>Type<select id="hpType" class="form-input"><option value="All">All</option><option value="Request">Request</option><option value="Others">Others</option></select></label><label>Payment Status<select id="hpStatus" class="form-input"><option>Unpaid</option><option>Partially Paid</option><option>Paid</option><option>All</option></select></label><label>Date Filter<select id="hpDateFilter" class="form-input"><option value="all">All Dates</option><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option></select><input type="date" id="hpDate" class="form-input" hidden></label><label>Sort<select id="hpSort" class="form-input"><option value="desc">Newest First</option><option value="asc">Oldest First</option></select></label><button type="button" class="record-filter-clear" id="hpReset">Reset</button></div></div>
+ <p id="hpMessage" role="status">Open Historical Payment to load records.</p><div class="table-responsive"><table class="data-table" data-no-record-filters="1"><thead><tr><th>Historical ID</th><th>Homeowner</th><th>Type</th><th>Description</th><th>Original Date</th><th>Amount</th><th>Verified Paid</th><th>Remaining Due</th><th>Status</th><th>Action</th></tr></thead><tbody id="hpRows"></tbody></table></div>
+ <div class="nfh-hp-pager"><button type="button" class="btn btn-secondary" id="hpPrev">Previous</button><span id="hpPage">Page 1</span><button type="button" class="btn btn-secondary" id="hpNext">Next</button></div></div>
+ <div id="hpModal" class="nfh-hp-modal" hidden><div class="nfh-hp-dialog" role="dialog" aria-modal="true" aria-labelledby="hpModalTitle"><h2 id="hpModalTitle">Record Historical Payment</h2><p id="hpInfo"></p><form id="hpPaymentForm"><label>Cash Received (₱)<input id="hpAmount" name="amount" class="form-input" inputmode="numeric" type="number" min="1" step="1" required></label><label>Payment Date<input id="hpPaymentDate" type="date" class="form-input" required></label><label>Official Receipt Number<input id="hpReceipt" name="receipt_no" class="form-input" maxlength="120" required></label><div class="nfh-hp-actions"><button type="button" class="btn btn-secondary" id="hpCancel">Cancel</button><button type="submit" class="btn btn-primary" id="hpConfirm">Confirm Payment</button></div><p id="hpFormMessage" role="status"></p></form></div></div>
+ </section>{% endif %}
+ <section id="transaction-history-tab" class="tab-content"><div class="content-card" data-nfh-transactions><div class="card-header"><div><h2>Transaction History</h2><p>Verified cash receipts and PDF income reporting</p></div></div><div class="nfh-tx-selected" data-tx-selected hidden aria-live="polite"></div><div class="nfh-tx-summary" aria-label="Income summary">
+  <div class="nfh-tx-stat"><strong>Request Fee</strong><p data-tx-total="request">₱0.00</p></div>
+  <div class="nfh-tx-stat"><strong>Monthly Dues</strong><p data-tx-total="dues">₱0.00</p></div>
+  <div class="nfh-tx-stat"><strong>Others</strong><p data-tx-total="others">₱0.00</p></div>
+</div>
+<div class="nfh-tx-toolbar" role="group" aria-label="Transaction history filters">
+  <label class="nfh-tx-field nfh-tx-search"><span>Find Records — Search Homeowner</span><div class="nfh-owner-box"><input class="form-input" name="q" aria-label="Search homeowner" placeholder="Name, ID, Block/Lot" autocomplete="off"><div class="nfh-owner-suggestions" data-tx-suggestions role="listbox" hidden></div></div></label>
+  <label class="nfh-tx-field"><span>Transaction Type</span><select class="form-input" name="category" aria-label="Transaction type"><option value="all">All Transactions</option><option>Request Fee</option><option>Monthly Dues</option><option>Others</option></select></label>
+  <label class="nfh-tx-field"><span>Date Filter</span><select class="form-input" name="date_filter" aria-label="Date filter"><option value="all">All Dates</option><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option><option value="range">Custom Range</option></select></label>
+  <label class="nfh-tx-field"><span>Sort Order</span><select class="form-input" name="sort" aria-label="Sort"><option value="desc">Newest First</option><option value="asc">Oldest First</option></select></label>
+</div>
+<div class="nfh-tx-actions">
+  <label class="nfh-tx-field nfh-tx-date-field" data-tx-date-wrap hidden><span data-tx-date-label>Selected Date</span><input class="form-input" name="date" aria-label="Selected date" disabled></label>
+  <label class="nfh-tx-field nfh-tx-range-field" data-tx-start-wrap hidden><span>Start Date</span><input class="form-input" type="date" name="start" aria-label="Range start" disabled></label>
+  <label class="nfh-tx-field nfh-tx-range-field" data-tx-end-wrap hidden><span>End Date</span><input class="form-input" type="date" name="end" aria-label="Range end" disabled></label>
+  <div class="nfh-tx-buttons"><button class="btn btn-secondary" type="button" data-tx-reset>Reset Filters</button><button class="btn btn-primary" type="button" data-tx-pdf>Generate Record to PDF</button></div>
+</div><div style="overflow-x:auto"><table class="data-table" style="width:100%"><thead><tr><th>Transaction ID</th><th>Date Paid</th><th>Homeowner</th><th>Type</th><th>Description</th><th>Amount Paid</th><th>Status</th><th>Reference</th><th>Source</th></tr></thead><tbody data-tx-rows></tbody></table></div><div style="display:flex;gap:12px;align-items:center;margin-top:12px"><button class="btn" type="button" data-tx-prev>Previous</button><span data-tx-status aria-live="polite"></span><button class="btn" type="button" data-tx-next>Next</button></div></div></section>
+<section id="financial-statement-tab" class="tab-content"><div class="content-card">
+<div class="card-header"><div><h2>Statement of Account</h2><p>Database-driven financial statement with verified payment details and PDF export.</p></div></div>
+<div class="form-group" style="max-width:720px"><label for="nfhSoaHomeownerSearch">Search Homeowner</label><input class="form-input" id="nfhSoaHomeownerSearch" type="search" placeholder="Search by homeowner name, Homeowner ID, Block or Lot..." autocomplete="off" aria-controls="nfhSoaHomeownerMatches"><div id="nfhSoaHomeownerMatches" class="nfh-homeowner-results" aria-live="polite"></div></div>
+<div id="nfhSoaSelection" hidden><div class="content-card" style="padding:14px;margin:12px 0"><strong id="nfhSoaSelectedName"></strong><p id="nfhSoaSelectedDetails"></p></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin:14px 0"><label>Transaction Type <select id="nfhSoaTransactionType" class="form-input"><option value="all">All Transactions</option><option value="monthly_dues">Monthly Dues</option><option value="request_fee">Request Fee</option><option value="others">Others</option></select></label><label>Payment Status <select id="nfhSoaPaymentStatus" class="form-input"><option value="all">All Statuses</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option><option value="partially_paid">Partially Paid</option></select></label><label>Period <select id="nfhSoaPeriod" class="form-input"><option value="all">All Dates</option><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option><option value="range">Custom Date Range</option></select></label><label id="nfhSoaDateWrap" hidden>Date <input class="form-input" id="nfhSoaDate" type="date"></label><label id="nfhSoaMonthWrap" hidden>Month <input class="form-input" id="nfhSoaMonth" type="month"></label><label id="nfhSoaYearWrap" hidden>Year <input class="form-input" id="nfhSoaYear" type="number" min="2000" max="2100" placeholder="YYYY"></label><label id="nfhSoaStartWrap" hidden>From <input class="form-input" id="nfhSoaStart" type="date"></label><label id="nfhSoaEndWrap" hidden>To <input class="form-input" id="nfhSoaEnd" type="date"></label><button type="button" class="btn btn-primary" id="nfhSoaApply">Apply Filters</button><a class="btn btn-primary" id="nfhSoaPdf" href="#" aria-disabled="true">Generate SOA PDF</a></div></div>
+<div id="nfhFinancialStatementOutput" aria-live="polite">Search and select a homeowner to view their Statement of Account.</div></div></section>
+
+                <section id="treasurer-contact-tab" class="tab-content">
+                    <div class="content-card"><div class="card-header"><h2>Treasurer Contact Information</h2></div>
+                        <p style="font-size:0.85rem;color:#666;margin-bottom:14px;">This information is shown to homeowners so they can coordinate payments directly with the Treasurer.</p>
+                        <form action="{{ url_for('update_treasurer_contact') }}" method="POST" style="max-width:480px;" data-system-confirm="Save these Treasurer contact details for homeowners?" data-confirm-title="Update Treasurer Contact" data-confirm-text="Save Contact Info">
+                            <div class="form-group"><label>Treasurer Name</label><input type="text" name="treasurer_name" class="form-input" value="{{ treasurer.name }}" required></div>
+                            <div class="form-group"><label>Contact Number</label><input type="text" name="treasurer_phone" class="form-input" value="{{ treasurer.phone }}" required></div>
+                            <div class="form-group"><label>Email Address</label><input type="email" name="treasurer_email" class="form-input" value="{{ treasurer.email }}"></div>
+                            <div class="form-group"><label>Office Hours</label><input type="text" name="treasurer_office_hours" class="form-input" value="{{ treasurer.office_hours }}"></div>
+                            <button type="submit" class="btn btn-primary">Save Contact Info</button>
+                        </form>
+                    </div>
+                </section>
+                {% endif %}
+
+
+                {% if role in ['Secretary','Treasurer'] %}
+                {% endif %}
+                {% if role in ['President','Vice President','Board Director'] or role == 'Admin' %}
+                <section id="pres-approvals-tab" class="tab-content">
+                    <div class="content-card"><div class="card-header"><h2>Requests Pending Final Executive Approval</h2></div>
+                    <div class="table-responsive"><table class="data-table professional-request-table"><thead><tr><th>Request ID</th><th>Homeowner</th><th>Request Type</th><th>Dues Status</th><th>Balance</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead><tbody>
+                    {% for req in assigned_requests %}<tr data-search-extra="Block {{ req.block or '' }} Lot {{ req.lot or '' }}"><td><code>{{ req.id }}</code></td><td>{{ req.homeowner }}</td><td>{{ req.request_type }}</td><td><span class="status-pill {{ 'status-rejected' if req.dues.unpaid_months else 'status-approved' }}">{{ 'Outstanding Dues' if req.dues.unpaid_months else 'Clear' }}</span>{% if req.dues.unpaid_months %}<small class="dues-month-count">{{ req.dues.unpaid_months }} month{{ 's' if req.dues.unpaid_months != 1 else '' }}</small>{% endif %}</td><td>₱{{ "%.2f"|format(req.dues.outstanding_balance) }}</td><td><span class="pay-pill pay-{{ req.payment_status|lower }}">{{ req.payment_status }}</span></td><td><span class="status-pill status-{{ req.status|replace(' ','-')|lower }}">{{ req.status }}</span></td><td><div class="review-actions"><a class="btn btn-sm btn-secondary" href="{{ url_for('request_review', req_id=req.id) }}" data-loading-text="Loading request review…">Review</a><a class="btn btn-sm btn-secondary" href="{{ url_for('request_document_pdf', req_id=req.id) }}" target="_blank" rel="noopener" data-loading-text="Preparing official document…">Preview Document</a><form action="{{ url_for('president_action', req_id=req.id) }}" method="POST" class="inline-form" onsubmit="return submitPreviewAction(event, 'Are you sure you want to approve this document request?')"><button type="submit" name="action" value="approve" class="btn btn-sm btn-success">Approve</button></form></div></td></tr>{% else %}<tr><td colspan="8" class="text-center">No requests pending approval.</td></tr>{% endfor %}
+                    </tbody></table></div></div>
+                    <div class="content-card executive-history-card"><div class="card-header"><h2>Recent Executive Decisions</h2></div><div class="table-responsive"><table class="data-table professional-request-table"><thead><tr><th>Request ID</th><th>Homeowner</th><th>Request Type</th><th>Decision</th><th>Decided By</th><th>Date & Time</th><th>Reason</th></tr></thead><tbody>{% for h in executive_history %}<tr data-search-extra="Block {{ h.block or '' }} Lot {{ h.lot or '' }}"><td><code>{{ h.id }}</code></td><td>{{ h.homeowner }}</td><td>{{ h.request_type }}</td><td><span class="status-pill status-{{ h.status|lower }}">{{ h.status }}</span></td><td>{{ h.executive_decided_by }}<br><small>{{ h.executive_decided_role }}</small></td><td>{{ h.executive_decided_at }}</td><td class="table-long-text">{{ h.executive_decision_reason or '—' }}{% if h.executive_decision_details %}<br><small>{{ h.executive_decision_details }}</small>{% endif %}</td></tr>{% else %}<tr><td colspan="7" class="text-center">No Executive decisions recorded yet.</td></tr>{% endfor %}</tbody></table></div></div>
+                </section>
+                <section id="pres-fees-tab" class="tab-content">
+                    <div class="content-card"><div class="card-header"><h2>Proposed Fee Changes</h2></div>
+                        <div class="table-responsive"><table class="data-table"><thead><tr><th>Item</th><th>Current</th><th>Proposed</th><th>Action</th></tr></thead><tbody>
+                        {% for name, fee in fees.items() %}{% if fee.status == 'Pending Executive Approval' %}
+                        <tr><td><strong>{{ name }}</strong></td><td>₱{{ "%.2f"|format(fee.amount) }}</td><td><strong>₱{{ "%.2f"|format(fee.proposed_amount) }}</strong></td>
+                            <td><form action="{{ url_for('president_fee_action') }}" method="POST" class="inline-form" onsubmit="return submitPreviewAction(event, 'Record this fee decision?')"><input type="hidden" name="fee_name" value="{{ name }}"><button type="submit" name="action" value="approve" class="btn btn-sm btn-success">Approve</button><button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">Reject</button></form></td>
+                        </tr>{% endif %}{% endfor %}{% if not fees.values()|selectattr('status','equalto','Pending Executive Approval')|list %}<tr><td colspan="4" class="text-center">No pending fee proposals.</td></tr>{% endif %}
+                        </tbody></table></div>
+                    </div>
+                </section>
+                {% endif %}
+
+                <section id="document-templates-tab" class="tab-content">
+                    <div class="content-card"><div class="card-header"><div><h2>Official Document Templates</h2><p class="card-subtitle">View the current NFH-HOA soft-copy layouts based on the paper documents supplied by the association. Officers have view-only access; the Administrator manages wording and versions.</p></div></div>
+                        <div class="template-card-grid">{% for t in document_templates %}<article class="template-reference-card"><div class="template-reference-icon"><i class="fa-regular fa-file-lines"></i></div><div><strong>{{ t.title }}</strong><span>{{ t.service_name or t.template_key }}</span><small>Version {{ t.version_no }}</small></div><a class="btn btn-sm btn-secondary" href="{{ url_for('document_template_preview', template_key=t.template_key) }}" target="_blank" rel="noopener">Preview PDF</a></article>{% else %}<p class="text-center">No document templates are configured.</p>{% endfor %}</div>
+                    </div>
+                </section>
+
+                <section id="concerns-tab" class="tab-content"><div class="content-card nfh-concerns-officer"><div class="card-header"><div><h2>Concern Management</h2><p>Shared concern queue for authorized HOA officers.</p></div></div><div id="nfhConcernCounters" class="nfh-concern-counters" aria-live="polite"></div><div class="nfh-concern-filters record-filter-panel"><label>Find Records<input id="nfhConcernSearch" placeholder="Name, Homeowner ID, subject, category or reference" type="search"></label><label>Status<select id="nfhConcernStatus"><option value="">All statuses</option><option value="Submitted">New</option><option>Acknowledged</option><option>In Progress</option><option>Resolved</option><option>Closed</option></select></label><label>Sort<select id="nfhConcernSort"><option value="desc">Newest First</option><option value="asc">Oldest First</option></select></label><button type="button" class="btn btn-secondary" id="nfhConcernReset">Reset</button></div><div class="table-responsive"><table class="data-table" data-no-record-filters="1"><thead><tr><th>Homeowner ID</th><th>Subject</th><th>Category</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead><tbody id="nfhOfficerConcernRows"></tbody></table></div><div class="nfh-concern-pager"><button type="button" id="nfhConcernPrev" class="btn btn-secondary">Previous</button><span id="nfhConcernPage"></span><button type="button" id="nfhConcernNext" class="btn btn-secondary">Next</button></div><div id="nfhOfficerConcernDetail" hidden><h3 id="nfhConcernDetailTitle"></h3><p id="nfhConcernDetailDescription"></p><div id="nfhConcernHistory"></div><form id="nfhOfficerConcernForm"><label>Response<textarea id="nfhConcernResponse" required maxlength="4000"></textarea></label><label>Status<select id="nfhConcernNewStatus"><option>Acknowledged</option><option>In Progress</option><option>Resolved</option><option>Closed</option></select></label><button class="btn btn-primary" type="submit">Save Response</button></form></div><output id="nfhOfficerConcernMessage" role="status"></output></div></section>
+            </main>
+        </div>
+    </div>
+
+
+    {% if role in ['Secretary','Treasurer','Admin'] %}
+    <div class="modal-overlay" id="issueRequestModal">
+        <div class="modal-box issue-request-modal" role="dialog" aria-modal="true" aria-labelledby="issueRequestTitle">
+            <div class="modal-header">
+                <div><span class="modal-eyebrow">Document Release</span><h3 id="issueRequestTitle">Mark Request as Issued</h3></div>
+                <button class="close-btn" type="button" onclick="closeModal('issueRequestModal')" aria-label="Close issue request modal">&times;</button>
+            </div>
+            <form id="issueRequestForm" method="POST" data-system-confirm="Confirm that this document/service has actually been issued to the homeowner?" data-confirm-title="Confirm Issuance" data-confirm-text="Mark as Issued">
+                <div class="modal-body">
+                    <div class="issue-request-summary">
+                        <div><span>Request ID</span><strong id="issueRequestId">—</strong></div>
+                        <div><span>Homeowner</span><strong id="issueHomeowner">—</strong></div>
+                        <div><span>Request Type</span><strong id="issueRequestType">—</strong></div>
+                    </div>
+                    <div class="sticker-validity-fields" id="stickerValidityFields" hidden>
+                        <div class="form-group"><label for="stickerValidFrom">Sticker Valid From <span>*</span></label><input id="stickerValidFrom" name="sticker_valid_from" class="form-input" type="date"></div>
+                        <div class="form-group"><label for="stickerValidUntil">Sticker Valid Until <span>*</span></label><input id="stickerValidUntil" name="sticker_valid_until" class="form-input" type="date"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="issueReleaseRemarks">Release Remarks <small>(optional)</small></label>
+                        <textarea id="issueReleaseRemarks" name="release_remarks" class="form-input" rows="3" placeholder="Example: Released to homeowner at HOA office."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('issueRequestModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Mark as Issued</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if role == 'Treasurer' or role == 'Admin' %}
+    <div class="modal-overlay" id="paymentVerificationModal">
+        <div class="modal-box payment-verification-modal" role="dialog" aria-modal="true" aria-labelledby="paymentVerificationTitle">
+            <div class="modal-header">
+                <div><span class="modal-eyebrow">Face-to-Face Transaction</span><h3 id="paymentVerificationTitle">Payment &amp; Document Release</h3></div>
+                <button class="close-btn" type="button" onclick="closeModal('paymentVerificationModal')" aria-label="Close payment and release modal">&times;</button>
+            </div>
+            <form id="paymentVerificationForm" method="POST" onsubmit="return submitPaymentVerification(event)">
+                <div class="modal-body">
+                    <div class="issue-request-summary">
+                        <div><span>Request ID</span><strong id="paymentVerifyReqId">—</strong></div>
+                        <div><span>Homeowner</span><strong id="paymentVerifyHomeowner">—</strong></div>
+                        <div><span>Request Type</span><strong id="paymentVerifyType">—</strong></div>
+                        <div><span>Amount Due</span><strong id="paymentVerifyAmount">—</strong></div>
+                    </div>
+                    <div class="workflow-callout compact"><i class="fa-solid fa-money-bill-wave"></i><div><strong>Cash payment only</strong><span>NFH-HOA does not process online payments. Record the actual face-to-face cash transaction here.</span></div></div>
+                    <div class="payment-verification-fields">
+                        <div class="form-group"><label>Payment Method</label><input class="form-input" value="Cash" readonly></div>
+                        <div class="form-group"><label for="paymentVerifyDate">Payment / Release Date</label><input id="paymentVerifyDate" name="payment_date" class="form-input" type="date" required></div>
+                        <div class="form-group"><label for="paymentVerifyOR">Official Receipt Number <span>*</span></label><input id="paymentVerifyOR" name="official_receipt_no" class="form-input" autocomplete="off" maxlength="120" required placeholder="Enter the unique physical HOA receipt number"></div>
+                    </div>
+                    <div class="print-ready-document-panel">
+                        <div class="print-ready-document-copy">
+                            <i class="fa-regular fa-file-pdf" aria-hidden="true"></i>
+                            <div><strong>Official document ready for printing</strong><span>Preview it in the portal or download the PDF, print it, then hand the physical copy to the homeowner.</span></div>
+                        </div>
+                        <div class="print-ready-document-actions">
+                            <a id="paymentPreviewDocumentBtn" class="btn btn-secondary btn-sm" href="#"><i class="fa-regular fa-eye" aria-hidden="true"></i> Preview Document</a>
+                            <a id="paymentDownloadDocumentBtn" class="btn btn-primary btn-sm" href="#" download data-document-download><i class="fa-solid fa-download" aria-hidden="true"></i> Download PDF for Printing</a>
+                        </div>
+                        <small class="print-ready-document-note">The printable copy uses the selected payment/release date as its issuance date. Confirm release only after the printed document is actually handed to the homeowner.</small>
+                    </div>
+                    <label class="release-confirm-check"><input type="checkbox" id="paymentDocumentReleased" name="document_released" value="1" checked><span><strong>Document was handed to the homeowner during this transaction.</strong><small>Keep this checked for the normal one-visit payment + release process. Uncheck only if payment was accepted but the document was not yet physically released.</small></span></label>
+                    <div class="sticker-validity-fields" id="paymentStickerValidityFields" hidden>
+                        <div class="form-group"><label for="paymentStickerValidFrom">Sticker Valid From <span>*</span></label><input id="paymentStickerValidFrom" name="sticker_valid_from" class="form-input" type="date"></div>
+                        <div class="form-group"><label for="paymentStickerValidUntil">Sticker Valid Until <span>*</span></label><input id="paymentStickerValidUntil" name="sticker_valid_until" class="form-input" type="date"></div>
+                    </div>
+                    <div class="form-group"><label for="paymentReleaseRemarks">Transaction / Release Remarks <small>(optional)</small></label><textarea id="paymentReleaseRemarks" name="release_remarks" class="form-input" rows="3" placeholder="Example: Cash received and document released to homeowner."></textarea></div>
+                    <p class="payment-verification-note">After confirmation, the system automatically generates a unique <strong>System Reference</strong> (for example, NFH-PAY-2026-00001), records the request history, and—when the document is handed over—marks the request <strong>Issued / Completed</strong>. The <strong>Official Receipt Number</strong> remains a separate HOA physical-receipt reference.</p>
+                    <p class="form-error" id="paymentVerificationError" hidden></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('paymentVerificationModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Confirm Payment &amp; Release</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Logout Modal -->
+
+    <div class="modal-overlay" id="accountProfileModal" role="dialog" aria-modal="true" aria-labelledby="accountProfileTitle">
+        <div class="modal-box account-profile-modal">
+            <div class="modal-header"><div><span class="modal-eyebrow">NFH HOA Account</span><h3 id="accountProfileTitle">Account Details</h3></div><button class="close-btn" type="button" onclick="closeModal('accountProfileModal')">&times;</button></div>
+            <div class="modal-body">
+                <div class="account-media-panel">
+                    <div class="account-media-block"><span class="account-media-label">Profile Picture</span><div class="account-media-preview profile-media-preview" id="accountPhotoPreview">{% if current_user and current_user.profile_image %}<img src="{{ current_user.profile_image }}" alt="Current profile picture">{% else %}<span>{{ (session.full_name or role or 'U')[:1]|upper }}</span>{% endif %}</div><div class="account-media-actions"><label class="btn btn-secondary btn-sm" for="officerProfilePhotoInput"><i class="fa-solid fa-camera"></i> Change Photo</label><input id="officerProfilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden><small>JPG, PNG or WEBP • max 5MB</small></div></div>
+                    <div class="account-media-block"><span class="account-media-label">E-Signature</span><div class="account-media-preview signature-media-preview" id="accountESignPreview">{% if current_user and current_user.e_signature_path %}<img src="{{ url_for('view_esignature', user_id=current_user.id) }}" alt="Current e-signature">{% else %}<span class="esign-empty"><i class="fa-solid fa-signature"></i> No e-signature uploaded</span>{% endif %}</div><div class="account-media-actions"><label class="btn btn-secondary btn-sm" for="officerESignInput"><i class="fa-solid fa-upload"></i> Upload E-Signature</label><input id="officerESignInput" type="file" accept="image/png,image/jpeg" hidden><button class="btn btn-sm btn-text-danger" id="removeESignBtn" type="button" {% if not current_user or not current_user.e_signature_path %}hidden{% endif %}>Remove</button><small>Transparent PNG is recommended. Used only where your role is required.</small></div></div>
+                </div>
+                <div class="account-profile-grid">
+                    <div><span>Full Name</span><strong>{{ current_user.full_name if current_user else session.full_name }}</strong></div>
+                    <div><span>Role / Position</span><strong>{{ role }}</strong></div>
+                    <div><span>Username</span><strong>{{ current_user.username if current_user else session.username }}</strong></div>
+                    <div><span>Email</span><strong>{{ current_user.email if current_user else '—' }}</strong></div>
+                    <div><span>Contact Number</span><strong>{{ current_user.mobile if current_user else '—' }}</strong></div>
+                    <div><span>Account Status</span><strong>{{ current_user.status if current_user else 'Active' }}</strong></div>
+                </div>
+                <p class="account-control-note"><i class="fa-solid fa-shield-halved"></i> Your name, role, email, mobile number, and account status are managed by the Administrator. You may update only your profile picture and e-signature here.</p>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" type="button" onclick="closeModal('accountProfileModal')">Done</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="accountSecurityModal" role="dialog" aria-modal="true" aria-labelledby="accountSecurityTitle">
+        <div class="modal-box account-security-modal">
+            <div class="modal-header"><div><span class="modal-eyebrow">Account Security</span><h3 id="accountSecurityTitle">Change Password</h3></div><button class="close-btn" type="button" onclick="closeModal('accountSecurityModal')">&times;</button></div>
+            <form id="accountSecurityForm" onsubmit="return saveOfficerAdminPassword(event)">
+                <div class="modal-body account-security-fields">
+                    <div class="form-group"><label for="accountCurrentPassword">Current Password</label><input id="accountCurrentPassword" class="form-input" type="password" autocomplete="current-password" required></div>
+                    <div class="form-group"><label for="accountNewPassword">New Password</label><input id="accountNewPassword" class="form-input" type="password" autocomplete="new-password" minlength="8" required><small class="form-help">Use at least 8 characters.</small></div>
+                    <div class="form-group"><label for="accountConfirmPassword">Confirm New Password</label><input id="accountConfirmPassword" class="form-input" type="password" autocomplete="new-password" minlength="8" required></div>
+                </div>
+                <div class="modal-footer"><button class="btn btn-secondary" type="button" onclick="closeModal('accountSecurityModal')">Cancel</button><button class="btn btn-primary" type="submit">Update Password</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay unified-logout-overlay" id="logoutModal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle"><div class="modal-box unified-logout-card"><button class="unified-logout-close" type="button" onclick="closeModal('logoutModal')" aria-label="Close">&times;</button><div class="unified-logout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><h3 id="logoutTitle">Sign Out</h3><p>Are you sure you want to sign out of your account?</p><div class="unified-logout-actions"><button type="button" class="btn btn-secondary" onclick="closeModal('logoutModal')">Cancel</button><a href="{{ url_for('logout') }}" class="btn unified-logout-primary">Sign Out</a></div></div></div>
+
+
+    <!-- Shared in-system confirmation and immediate feedback layer -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+    <div class="modal-overlay system-confirm-overlay" id="systemConfirmModal" role="dialog" aria-modal="true" aria-labelledby="systemConfirmTitle">
+        <div class="modal-box system-confirm-box">
+            <div class="confirm-icon-wrap" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="confirm-copy"><span class="modal-eyebrow">NFH HOA</span><h3 id="systemConfirmTitle">Confirm Action</h3><p id="systemConfirmMessage"></p></div>
+            <div id="systemConfirmContext" class="confirm-context" hidden></div>
+            <div class="modal-footer system-confirm-footer"><button type="button" id="systemConfirmCancel" class="btn btn-secondary">Cancel</button><button type="button" id="systemConfirmButton" class="btn confirm-primary">Confirm</button></div>
+        </div>
+    </div>
+    <script>const ALL_REQUESTS = {{ requests | tojson }}; const CURRENT_ROLE = {{ role | tojson }}; const SERVER_FLASH_MESSAGES = {{ get_flashed_messages(with_categories=true) | tojson }}.map(([category,message])=>({category,message}));</script>
+
+    <!-- Shared 30-minute inactivity security warning -->
+    <div class="session-timeout-overlay" id="sessionTimeoutModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="sessionTimeoutTitle" aria-describedby="sessionTimeoutDescription" data-user-key="{{ session.user_id }}" data-timeout-seconds="{{ session_timeout_seconds }}" data-warning-seconds="{{ session_warning_seconds }}">
+        <div class="session-timeout-dialog" role="document">
+            <div class="session-timeout-accent"></div>
+            <div class="session-timeout-body">
+                <div class="session-timeout-heading">
+                    <span class="session-timeout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3.2 1.8"/><path d="M8.1 2.9 6.3 5.1M15.9 2.9l1.8 2.2"/></svg></span>
+                    <div><p class="session-timeout-eyebrow">Account Security</p><h2 class="session-timeout-title" id="sessionTimeoutTitle">Session Expiring Soon</h2></div>
+                </div>
+                <p class="session-timeout-copy" id="sessionTimeoutDescription">For your account security, your session will automatically end after 30 minutes of inactivity. Select <strong>Stay Signed In</strong> to continue your current session.</p>
+                <div class="session-timeout-countdown" aria-live="polite"><span>Session expires in</span><strong id="sessionTimeoutCountdown">05:00</strong></div>
+            </div>
+            <div class="session-timeout-actions">
+                <button type="button" class="session-timeout-btn session-timeout-btn-secondary" id="sessionSignOutNow">Sign Out Now</button>
+                <button type="button" class="session-timeout-btn session-timeout-btn-primary" id="sessionStaySignedIn">Stay Signed In</button>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='csrf.js', v='20261001bsis1') }}"></script>
+    <script src="{{ url_for('static', filename='session-timeout.js') }}"></script>
+    <script src="{{ url_for('static', filename='form-usability.js', v='20261003final1') }}"></script>
+    <script src="{{ url_for('static', filename='nfh-loading.js', v='20261004final') }}"></script>
+<div id="nfhCashModal" class="nfh-cash-modal" hidden role="presentation"><div class="nfh-cash-overlay" data-cash-close></div>
+<section role="dialog" aria-modal="true" aria-labelledby="nfhCashTitle" class="nfh-cash-dialog" tabindex="-1">
+<header><h2 id="nfhCashTitle">Record Monthly Dues Payment</h2><button type="button" data-cash-close aria-label="Close">×</button></header>
+<p>Confirm the actual face-to-face cash payment received.</p><form id="nfhCashForm">
+<div class="nfh-cash-grid"><div><small>Homeowner</small><strong id="nfhCashName"></strong></div><div><small>Homeowner ID</small><strong id="nfhCashId"></strong></div><div><small>Outstanding</small><strong id="nfhCashOutstanding"></strong></div><div><small>Unpaid Months</small><strong id="nfhCashMonths"></strong></div></div>
+<div id="nfhCashPlan" hidden><h3>Historical Payment Plan</h3><div class="nfh-cash-grid"><div>Plan status: <strong id="nfhCashPlanStatus"></strong></div><div>Installment due: <strong id="nfhCashInst"></strong></div><div>Plan balance: <strong id="nfhCashPlanBalance"></strong></div><div>Next due: <strong id="nfhCashDue"></strong></div><div>Unpaid installments: <strong id="nfhCashCount"></strong></div></div></div>
+<div class="nfh-cash-grid"><div>Current regular dues: <strong id="nfhCashCurrent"></strong></div><div>Combined suggested payment: <strong id="nfhCashSuggested"></strong></div></div>
+<label>Actual cash received (₱)<input id="nfhCashAmount" type="number" step="1" min="1" required></label><label>Payment date<input id="nfhCashDate" type="date" required></label><label>Reference number (optional)<input id="nfhCashRef" maxlength="100"></label><label>Automatic payment remarks<textarea id="nfhCashRemarks" readonly rows="2"></textarea></label>
+<div class="nfh-cash-grid"><div>Actual payment: <strong id="nfhCashPreview"></strong></div><div>Remaining balance: <strong id="nfhCashRemaining"></strong></div></div><p id="nfhCashError" role="alert" hidden></p>
+<footer><button type="button" data-cash-close>Cancel</button><button type="submit" id="nfhCashConfirm">Confirm Payment</button></footer></form></section></div>
+
+    <script src="{{ url_for('static', filename='officer.js', v='batch10sidebar20261121') }}"></script>
+    <script src="{{ url_for('static',filename='nfh-promo-list.js', v='20261121batch11') }}"></script>
+    <script src="{{ url_for('static', filename='nfh-table-tools.js', v='20261001audit1') }}"></script>
+    <script src="{{ url_for('static', filename='document-preview.js', v='20261001preview1') }}"></script>
+<script src="{{ url_for('static',filename='nfh-officer-concerns.js') }}"></script><script src="{{ url_for('static', filename='nfh-financial.js') }}"></script><script src="{{ url_for('static', filename='nfh-membership.js') }}"></script>
+<script src="{{ url_for('static',filename='nfh-transaction-history.js') }}"></script>
+<script src="{{ url_for('static', filename='nfh-submit-guard.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static',filename='nfh-historical-payment.css') }}">
+<script src="{{ url_for('static',filename='nfh-historical-payment.js') }}"></script>
+<script src="{{ url_for('static',filename='nfh-homeowner-autocomplete.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static',filename='nfh-homeowner-autocomplete.css') }}">
+<link rel="stylesheet" href="{{ url_for('static',filename='nfh-payment-records.css') }}">
+<script src="{{ url_for('static',filename='nfh-payment-records.js') }}"></script>
+<script defer src="{{ url_for('static',filename='officer-task-queue.js',v='b12tasks1') }}"></script>
+</body>
+</html>

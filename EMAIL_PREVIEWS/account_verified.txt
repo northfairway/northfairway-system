@@ -1,0 +1,10 @@
+Account Verification Successful
+Dear Sample Homeowner,
+Your homeowner registration has been successfully verified. You may now sign in to the homeowner portal.
+Homeowner Name: Sample Homeowner
+Homeowner ID: NFH-B10-L17
+Account Status: Verified
+Decision Date: 2026-10-30
+Please sign in to the NFH-HOA portal to review your status.
+North Fairway Homes Homeowners Association Inc.
+This is an automated notification.
